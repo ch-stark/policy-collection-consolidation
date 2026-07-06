@@ -15,7 +15,7 @@ Consolidated ACM governance policies for **Red Hat Advanced Cluster Management 2
 
 | Resource | Format | Purpose |
 |----------|--------|---------|
-| [policies/policy-catalog.yaml](policies/policy-catalog.yaml) | YAML | Machine-readable index of all 137 policies with metadata |
+| [policies/policy-catalog.yaml](policies/policy-catalog.yaml) | YAML | Machine-readable index of all policies with metadata |
 | [AGENTS.md](AGENTS.md) | Markdown | This file — repository context, rules, workflows |
 | [CLAUDE.md](CLAUDE.md) | Markdown | Claude Code agent instructions |
 | [docs/policy-list.md](docs/policy-list.md) | Markdown | Human-readable policy catalog |

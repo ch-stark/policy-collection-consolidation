@@ -1,7 +1,7 @@
 ---
 # Machine-readable policy catalog for AI consumption
 # Custom schema (not a Kubernetes CRD). Each entry = one policy name from a generator.yml policies[] block.
-# Project directories use generator.yml; entry count (137) != generator.yml file count (~81).
+# Entry count (139) != generator.yml file count (~81); each entry is one policy name from a generator.yml policies[] block.
 apiVersion: v1
 kind: PolicyCatalog
 metadata:
@@ -2198,6 +2198,42 @@ policies:
         - "CM-2 Baseline Configuration"
     dependencies: []
     policySets: []
+    policyType: ConfigurationPolicy
+
+  - name: audit-operator-guardrails-inform
+    path: policies/policy-sets/community/operatorguardrails
+    category: policy-sets
+    description: "Audit existing OLM Subscriptions against hub allowlist/denylist ConfigMaps (inform only)"
+    remediationAction: inform
+    severity: critical
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - operator-guardrails
+    policyType: ConfigurationPolicy
+
+  - name: audit-operator-guardrails-enforce
+    path: policies/policy-sets/community/operatorguardrails
+    category: policy-sets
+    description: "Deploy allowlist/denylist ConfigMaps and ValidatingAdmissionPolicy for operator guardrails"
+    remediationAction: enforce
+    severity: critical
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - operator-guardrails
     policyType: ConfigurationPolicy
 
   # ---------------------------------------------------------------------------

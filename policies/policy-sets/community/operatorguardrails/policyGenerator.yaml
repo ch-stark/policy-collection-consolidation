@@ -1,0 +1,46 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: operator-guardrails
+placementBindingDefaults:
+  name: operator-guardrails-binding
+policyDefaults:
+  namespace: acm-policies
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  remediationAction: inform
+  evaluationInterval:
+    compliant: 12h
+    noncompliant: 1h
+  severity: critical
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: operator-guardrails
+  policySets:
+    - operator-guardrails
+policies:
+  - name: audit-operator-guardrails-inform
+    description: "Audit existing OLM Subscriptions against hub allowlist/denylist ConfigMaps (inform only)"
+    remediationAction: inform
+    manifests:
+      - path: input/auditoperators/auditpolicy.yaml
+        name: audit-operator-subscriptions
+
+  - name: audit-operator-guardrails-enforce
+    description: "Deploy allowlist/denylist ConfigMaps and ValidatingAdmissionPolicy for operator guardrails"
+    remediationAction: enforce
+    manifests:
+      - path: input/auditoperators/configmaps.yaml
+        name: operator-allowlist-denylist
+      - path: input/auditoperators/vap.yaml
+        name: operator-guardrails-vap
+policySets:
+  - name: operator-guardrails
+    description: "Operator Guardrails for OpenShift — audit and warn on disallowed operator subscriptions"
+    placement:
+      placementPath: placement.yaml

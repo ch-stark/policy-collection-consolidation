@@ -14,6 +14,7 @@ Official and community PolicySet projects from policy-collection, built with Pol
 | `community/ocp-best-practices/` | Community | OpenShift best practices |
 | `community/openshift-gitops/` | Community | OpenShift GitOps integration |
 | `community/openshift-plus-setup/` | Community | OpenShift Plus setup helpers |
+| `community/operatorguardrails/` | Community | OLM operator allowlist/denylist audit and VAP warnings ([PR #553](https://github.com/open-cluster-management-io/policy-collection/pull/553)) |
 
 ## Usage
 
