@@ -1,0 +1,147 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: acm-policy-tutorial
+policyDefaults:
+  namespace: tutorial-policies
+  remediationAction: inform
+  placement:
+    placementName: tutorial-placement
+  severity: medium
+  standards:
+    - "NIST SP 800-53"
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  policyLabels:
+    tutorial.open-cluster-management.io/part-of: acm-policy-tutorial
+
+placementBindingDefaults:
+  name: tutorial-placement-binding
+
+policies:
+  # --- 01 PolicyGenerator ---
+  - name: tutorial-policy-generator-demo
+    description: "Creates a demo namespace and ConfigMap via PolicyGenerator"
+    remediationAction: enforce
+    manifests:
+      - path: 01-policy-generator/demo-namespace.yml
+        name: tutorial-demo-namespace
+      - path: 01-policy-generator/demo-configmap.yml
+        name: tutorial-demo-configmap
+
+  # --- 02 ArgoCD (hub-only, inform — reference manifests) ---
+  - name: tutorial-argocd-setup
+    description: "Documents ArgoCD instance and Application for syncing this tutorial"
+    remediationAction: inform
+    placement:
+      placementName: tutorial-hub-placement
+    manifests:
+      - path: 02-argocd-setup/argocd-instance.yml
+        name: tutorial-argocd-instance
+      - path: 02-argocd-setup/argocd-application.yml
+        name: tutorial-argocd-application
+
+  # --- 03 Policy Dependencies ---
+  - name: tutorial-deps-namespace
+    description: "Prerequisite namespace for dependency chain demo"
+    remediationAction: enforce
+    manifests:
+      - path: 03-policy-dependencies/deps-namespace.yml
+        name: tutorial-deps-namespace
+
+  - name: tutorial-deps-configmap
+    description: "ConfigMap deployed only after tutorial-deps-namespace is Compliant"
+    remediationAction: enforce
+    dependencies:
+      - name: tutorial-deps-namespace
+        compliance: Compliant
+        kind: Policy
+    manifests:
+      - path: 03-policy-dependencies/deps-configmap.yml
+        name: tutorial-deps-configmap
+
+  # --- 04 PolicyReport ---
+  - name: tutorial-policy-report
+    description: "Inform when PolicyReport contains fail results in application namespaces"
+    remediationAction: inform
+    consolidateManifests: false
+    namespaceSelector:
+      include:
+        - "*"
+      exclude:
+        - kube-*
+        - openshift-*
+    manifests:
+      - path: 04-policy-report/policyreport-probe.yml
+        name: tutorial-check-policyreports
+        complianceType: mustnothave
+
+  - name: tutorial-cluster-policy-report
+    description: "Inform when ClusterPolicyReport contains fail results"
+    remediationAction: inform
+    consolidateManifests: false
+    manifests:
+      - path: 04-policy-report/clusterpolicyreport-probe.yml
+        name: tutorial-check-clusterpolicyreports
+        complianceType: mustnothave
+
+  # --- 05 Critical policy alerts (hub) ---
+  - name: tutorial-critical-alerts
+    description: "PrometheusRule alerting on non-compliant root policies"
+    remediationAction: enforce
+    placement:
+      placementName: tutorial-hub-placement
+    configurationPolicyAnnotations:
+      policy.open-cluster-management.io/disable-templates: "true"
+    manifests:
+      - path: 05-critical-policy-alerts/prometheusrule.yml
+        name: tutorial-critical-prometheusrule
+
+  # --- 06 MustNotHave ---
+  - name: tutorial-mustnothave-olm
+    description: "Detect failed OLM InstallPlans and Subscriptions"
+    remediationAction: inform
+    consolidateManifests: false
+    namespaceSelector:
+      include:
+        - openshift-*
+        - open-cluster-management
+        - multicluster-engine
+      exclude:
+        - kube-*
+        - default
+    manifests:
+      - path: 06-mustnothave/failed-installplan.yml
+        name: tutorial-olm-failed-installplan
+        complianceType: mustnothave
+      - path: 06-mustnothave/failed-subscription.yml
+        name: tutorial-olm-failed-subscription
+        complianceType: mustnothave
+
+  # --- 07 Policy Templates ---
+  - name: tutorial-policy-templates
+    description: "ConfigMaps with fromClusterClaim and hub template functions"
+    remediationAction: enforce
+    dependencies:
+      - name: tutorial-policy-generator-demo
+        compliance: Compliant
+        kind: Policy
+    manifests:
+      - path: 07-policy-templates/cluster-label-configmap.yml
+        name: tutorial-cluster-info-cm
+      - path: 07-policy-templates/hub-name-configmap.yml
+        name: tutorial-hub-lookup-cm
+
+policySets:
+  - name: tutorial-policyset
+    description: "All tutorial policies for clusters labeled tutorial-policies=enabled"
+    placement:
+      placementName: tutorial-placement
+
+  - name: tutorial-hub-policyset
+    description: "Hub-only tutorial policies (ArgoCD, alerts)"
+    placement:
+      placementName: tutorial-hub-placement

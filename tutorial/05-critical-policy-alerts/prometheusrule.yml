@@ -1,0 +1,22 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tutorial-policy-critical-alerts
+  namespace: open-cluster-management
+  labels:
+    tutorial.open-cluster-management.io/module: critical-alerts
+spec:
+  groups:
+    - name: TutorialGovernanceCritical
+      rules:
+        - alert: TutorialPolicyCritical
+          annotations:
+            message: >-
+              Tutorial policy {{ $labels.policy_namespace }}/{{ $labels.policy }}
+              is non-compliant (severity critical)
+          expr: policy_governance_info{type="root"} > 0
+          for: 2m
+          labels:
+            severity: critical
+            tutorial: "true"

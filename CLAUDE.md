@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Repository Overview
 
-Consolidated ACM governance policies from **policy-collection** and **bry-acm-policy-samples**. All new policies use **PolicyGenerator**; deployment is **ArgoCD only** (no Application/Subscription).
+Consolidated ACM governance policies for **ACM 2.15+** from **policy-collection** and **bry-acm-policy-samples**. All policies use **PolicyGenerator**; deployment is **ArgoCD** preferred, also supports direct `kustomize build` + `kubectl apply`.
 
 **Start here:** [AGENTS.md](AGENTS.md)
 
@@ -12,11 +12,12 @@ Consolidated ACM governance policies from **policy-collection** and **bry-acm-po
 
 ```
 policies/              # PRIMARY — PolicyGenerator projects
+policies/policy-catalog.yaml  # Machine-readable policy index (AI-ready)
 environments/          # dev/implt/prod kustomize overlays (ArgoCD source paths)
-argocd/                # ArgoCD Application manifests
+argocd/                # ArgoCD Application manifests (templates)
 kustomize-configs/     # Shared transformers
-template-examples/     # Standalone template patterns
-legacy/                # DEPRECATED raw Policy YAML (stable/community/3rd-party)
+template-examples/     # Advanced template patterns
+tutorial/              # Step-by-step tutorial (7 modules)
 docs/                  # Architecture, standards, policy catalog
 ```
 
@@ -25,9 +26,15 @@ docs/                  # Architecture, standards, policy catalog
 - `operators/` — OperatorPolicy (OLM operator installs)
 - `cluster-configs/` — OpenShift cluster configuration
 - `acm-configs/` — ACM hub/spoke settings
+- `cluster-health/` — Cluster health monitoring
+- `cluster-maintenance/` — Cluster hygiene and cleanup
+- `cluster-version/` — Cluster upgrade management
 - `security/` — CVE mitigations
+- `gatekeeper/` — Gatekeeper constraint templates
+- `third-party/` — Third-party integrations (CyberArk, LogicMonitor, Portworx)
+- `virt-management/` — OpenShift Virtualization
 - `policy-sets/` — Opt-in bundles (openshift-plus, gatekeeper, kyverno)
-- `examples/kustomize/` — Minimal PolicyGenerator tutorial
+- `examples/kustomize/` — Minimal PolicyGenerator example
 
 ## PolicyGenerator
 
@@ -38,30 +45,35 @@ docs/                  # Architecture, standards, policy catalog
 
 ## ArgoCD Deployment
 
+Update `repoURL` in `argocd/applications/` to point at your git remote, then:
+
 ```bash
 kubectl apply -f argocd/applications/policy-collection-dev.yaml
 ```
 
-ArgoCD requires `kustomizeBuildOptions: --enable-alpha-plugins`. See `policies/operators/gitops/argocd-policygenerator.yml`.
+ArgoCD requires `kustomizeBuildOptions: --enable-alpha-plugins --enable-helm`. See `policies/operators/gitops/argocd-policygenerator.yml`.
+
+## Direct Apply (no ArgoCD)
+
+```bash
+cd policies/<category>/<policy-name>
+kustomize build --enable-alpha-plugins | kubectl apply -f -
+```
 
 ## Validation
 
 ```bash
-./build/validate-policies.sh   # PolicyGenerator standalone + environment builds + legacy YAML
+./build/validate-policies.sh   # PolicyGenerator standalone + environment builds
 ./build/lint.sh                # yamllint + template-resolver
 ```
 
 ## Key Rules
 
-1. Never add raw `Policy` CRs outside `legacy/`
+1. Never add raw `Policy` CRs — use PolicyGenerator
 2. Never create Subscription/Channel/Application (appsub) resources
 3. Use `Placement` API, not deprecated `PlacementRule`
 4. Every policy directory needs `generator.yml`, `kustomization.yaml`, `README.md`
 5. YAML must start with `---`, no trailing whitespace
-
-## Legacy Content
-
-`legacy/stable/`, `legacy/community/`, `legacy/3rd-party/` — migrate to `policies/` over time.
 
 ## Contributing
 

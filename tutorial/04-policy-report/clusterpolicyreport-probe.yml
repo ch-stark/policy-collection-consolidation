@@ -1,0 +1,9 @@
+---
+apiVersion: wgpolicyk8s.io/v1alpha2
+kind: ClusterPolicyReport
+metadata:
+  name: tutorial-clusterpolicyreport-probe
+results:
+  - result: fail
+    policy: tutorial/example
+    message: Example cluster-level probe for MustNotHave matching

@@ -27,8 +27,8 @@ The Policies should look like this in the UI.
 
 ![Policies](images/policies-installed.png)
 
-Now you can create the Gatekeeper Policy Applications where the Application corresponds to the path under `policy-generator/policy-sets/community/gatekeeper`.
-**NOTE** Policy applications must always be deployed only to the Open Cluster Management hub managed cluster named `local-cluster`. Policy applications contain an additional placement resource that must be modified to control where the policies are distributed.
+Now you can create the Gatekeeper PolicySet Application pointing at `policies/policy-sets/community/gatekeeper` in this repository.
+**NOTE** PolicySets must be deployed from the ACM hub (`local-cluster`). Placement resources control which managed clusters receive the policies.
 
 ![Subscriptions](images/subscription.png)
 

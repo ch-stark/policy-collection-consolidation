@@ -3,3 +3,12 @@ deploy/manifests.yaml
 bin
 schemas
 *.sarif
+*.env
+.env*
+*.pem
+*.key
+kubeconfig
+.DS_Store
+__pycache__/
+node_modules/
+*.log

@@ -16,10 +16,9 @@ help () {
   echo "              [-a|--name <application-name>] [--dry-run]"
   echo ""
   echo "  -h|--help                   Display this menu"
-  echo "  -u|--url <url>              URL to the Git repository"
-  echo '                                (Default URL: "https://github.com/YOUR_ORG/policy-collection-consolidation.git")'
+  echo "  -u|--url <url>              URL to the Git repository (required for cluster deploy)"
   echo "  -b|--branch <branch>        Branch of the Git repository to point to"
-  echo '                                (Default branch: "main")'
+  echo '                                (Default branch: "master")'
   echo "  -p|--path <path/to/dir>     Path to the desired subdirectory of the Git repository"
   echo "                                (Default path: environments/dev)"
   echo "  -n|--namespace <namespace>  Namespace on the cluster to deploy policies to (must exist already)"
@@ -74,8 +73,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         esac
 done
-set -- "${POSITIONAL[@]}" # restore positional parameters
-
 if ! kubectl get deployment openshift-gitops-server -n openshift-gitops &>/dev/null; then
   echo "The OpenShift Gitops server is required, but is not installed."
   exit 1
@@ -87,8 +84,12 @@ echo "====================================================="
 echo "kubectl config:     $(kubectl config get-contexts | awk '/^\052/ {print $4"/"$3}')"
 echo "Cluster Namespace:  ${NAMESPACE:=acm-policies-dev}"
 echo "Application name:   ${NAME:=policy-collection-dev}"
-echo "Git URL:            ${GH_URL:=https://github.com/YOUR_ORG/policy-collection-consolidation.git}"
-echo "Git Branch:         ${GH_BRANCH:=main}"
+if [ -z "${GH_URL:-}" ]; then
+  echo "ERROR: -u|--url is required. This is a local-only repo with no default remote."
+  exit 1
+fi
+echo "Git URL:            ${GH_URL}"
+echo "Git Branch:         ${GH_BRANCH:=master}"
 echo "Git Path:           ${GH_PATH:=environments/dev}"
 echo "Dry run:            ${DRY_RUN:=false}"
 echo "====================================================="
@@ -116,6 +117,8 @@ spec:
     path: $GH_PATH
     repoURL: $GH_URL
     targetRevision: $GH_BRANCH
+    kustomize:
+      buildOptions: --enable-alpha-plugins --enable-helm
   syncPolicy:
     automated: {}
     syncOptions:

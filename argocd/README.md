@@ -1,6 +1,8 @@
 # ArgoCD Deployment
 
-Deploy consolidated policies via **ArgoCD** with PolicyGenerator support. No Application/Subscription (appsub) resources are used.
+Deploy consolidated policies via **ArgoCD** with PolicyGenerator support. 
+
+> **Local repo:** This project has no git remote. The Application YAML below are **templates only** — they are not applied automatically. Use `kustomize build` locally, or configure ArgoCD only when you have a git server you control.
 
 ## Prerequisites
 
@@ -42,8 +44,4 @@ spec:
 
 Point `targetRevision` at a git tag or branch per environment. Promote changes Dev → Implt → Prod by updating the Application `targetRevision` or using a release-management repo with ApplicationSets.
 
-## What is NOT used
 
-- `Subscription` / `Channel` (ACM Application Lifecycle)
-- `PlacementRule` (deprecated; use `Placement`)
-- Hub-side appsub GitOps

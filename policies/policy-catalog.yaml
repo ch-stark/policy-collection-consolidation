@@ -1,0 +1,2501 @@
+---
+# Machine-readable policy catalog for AI consumption
+# Custom schema (not a Kubernetes CRD). Each entry = one policy name from a generator.yml policies[] block.
+# Project directories use generator.yml; entry count (137) != generator.yml file count (~81).
+apiVersion: v1
+kind: PolicyCatalog
+metadata:
+  name: policy-collection-consolidation
+  description: Consolidated ACM governance policies for ACM 2.15+
+  acmMinVersion: "2.15"
+  generatedFrom: generator.yml files
+  repository: policy-collection-consolidation
+
+policies:
+  # ---------------------------------------------------------------------------
+  # ACM Configs
+  # ---------------------------------------------------------------------------
+  - name: acm-addon-config
+    path: policies/acm-configs/cluster-addon-config
+    category: acm-configs
+    description: "Configures ACM addon deployment settings and cluster management addons"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-addon-config
+    policyType: ConfigurationPolicy
+
+  - name: acm-placement-tolerations
+    path: policies/acm-configs/ensure-placement-toleration
+    category: acm-configs
+    description: "Ensures placement tolerations are configured on ACM placements"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-placement-toleration
+    policyType: ConfigurationPolicy
+
+  - name: generate-feature-placements
+    path: policies/acm-configs/feature-flags-placement
+    category: acm-configs
+    description: "Generates feature-flag-based Placement resources for ACM policy targeting"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-feature-placements
+    policyType: ConfigurationPolicy
+
+  - name: klusterlet-selector-tolerations
+    path: policies/acm-configs/klusterlet-infra
+    category: acm-configs
+    description: "Configures klusterlet infrastructure node selectors and tolerations with addon deployment configurations"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-klusterlet-infra
+    policyType: ConfigurationPolicy
+
+  - name: acm-kubeadmin-trustca
+    path: policies/acm-configs/kubeadmin-config-trustca
+    category: acm-configs
+    description: "Updates kubeadmin trusted CA configuration on the ACM hub"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-kubeadmin-trustca
+    policyType: ConfigurationPolicy
+
+  - name: enable-managed-serviceaccount
+    path: policies/acm-configs/managedserviceaccount
+    category: acm-configs
+    description: "Enables ManagedServiceAccount feature on the MultiClusterEngine"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-managed-sa
+    policyType: ConfigurationPolicy
+
+  - name: acm-observe
+    path: policies/acm-configs/observability
+    category: acm-configs
+    description: "Configures ACM Observability with S3 storage, Thanos secret, and MultiClusterObservability CR"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-observability
+    policyType: ConfigurationPolicy
+
+  - name: acm-observe-status
+    path: policies/acm-configs/observability
+    category: acm-configs
+    description: "Monitors the health status of ACM Observability"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies:
+      - acm-observe
+    policySets:
+      - acm-observability
+    policyType: ConfigurationPolicy
+
+  - name: acm-policy-alerts
+    path: policies/acm-configs/policy-alerts
+    category: acm-configs
+    description: "Deploys PrometheusRule for ACM policy compliance alerts on the hub"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-alerts-placements
+    policyType: ConfigurationPolicy
+
+  - name: acm-remove-kubeadmin
+    path: policies/acm-configs/remove-kubeadmin-pass
+    category: acm-configs
+    description: "Removes the kubeadmin password secret from the ACM hub cluster"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - acm-remove-kubeadmin
+    policyType: ConfigurationPolicy
+
+  - name: acm-cluster-debug-mode
+    path: policies/acm-configs/set-cluster-debug-mode
+    category: acm-configs
+    description: "Manages disabling Governance Policies to enable debugging cluster conditions"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - acm-debug-cluster
+    policyType: ConfigurationPolicy
+
+  - name: cluster-is-debug
+    path: policies/acm-configs/set-cluster-debug-mode
+    category: acm-configs
+    description: "Indicates any clusters that are in debug mode.  Disable debug label on ManagedCluster to restore compliance"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - acm-debug-cluster
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Application Defaults
+  # ---------------------------------------------------------------------------
+  - name: app-resource-tracker
+    path: policies/application-defaults/app-reload
+    category: application-defaults
+    description: "Monitors labeled Deployments and restarts them when a watched ConfigMap or Secret changes"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - app-reload
+    policyType: ConfigurationPolicy
+
+  - name: multi-cluster-gitops-hub
+    path: policies/application-defaults/gitops-multicluster
+    category: application-defaults
+    description: "Configures ManagedServiceAccount and permissions for each app team to deploy and managed their application from a single argo to all ManagedClusters"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - gitops-operator
+    policySets:
+      - multi-cluster-gitops-hub
+    policyType: ConfigurationPolicy
+
+  - name: multi-cluster-gitops
+    path: policies/application-defaults/gitops-multicluster
+    category: application-defaults
+    description: "Deploy an instance of Argo for Team Scooter"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gitops-team-scooter
+    policyType: ConfigurationPolicy
+
+  - name: default-block-all-networkpolicy
+    path: policies/application-defaults/network-policies
+    category: application-defaults
+    description: "Enforces a default deny-all NetworkPolicy in user namespaces"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - application-defaults-network-policies
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Cluster Configs
+  # ---------------------------------------------------------------------------
+  - name: apiserver-certificate
+    path: policies/cluster-configs/apiserver-cert
+    category: cluster-configs
+    description: "Provisions a cert-manager Certificate for the API server and configures the named certificate reference"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - cert-manager-clusterissuer
+    policySets:
+      - cluster-configs-apiserver-cert
+    policyType: ConfigurationPolicy
+
+  - name: chrony-ntp
+    path: policies/cluster-configs/chrony-ntp
+    category: cluster-configs
+    description: "Applies a MachineConfig to the worker and master MachineConfigPools to configure chronyd with the standard Red Hat NTP pool servers."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - chrony-ntp
+    policyType: ConfigurationPolicy
+
+  - name: cluster-autoscaling
+    path: policies/cluster-configs/cluster-autoscaling
+    category: cluster-configs
+    description: "Configures ClusterAutoscaler and creates MachineAutoscalers for MachineSets labeled with min/max replica counts"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-autoscaling
+    policyType: ConfigurationPolicy
+
+  - name: acm-clusterclaims
+    path: policies/cluster-configs/clusterclaims
+    category: cluster-configs
+    description: "Creates ClusterClaims that expose install-config name and OCP minor version as ManagedCluster labels"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-clusterclaims
+    policyType: ConfigurationPolicy
+
+  - name: cluster-proxy
+    path: policies/cluster-configs/cluster-proxy
+    category: cluster-configs
+    description: "Configures the cluster-wide HTTP proxy and trusted CA bundle"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-proxy
+    policyType: ConfigurationPolicy
+
+  - name: cluster-scheduler
+    path: policies/cluster-configs/default-scheduler
+    category: cluster-configs
+    description: "Labels worker nodes for scheduler targeting and sets the cluster default node selector"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-scheduler
+    policyType: ConfigurationPolicy
+
+  - name: disable-self-provisioner
+    path: policies/cluster-configs/disable-self-provisioner
+    category: cluster-configs
+    description: "Disables the self-provisioner ClusterRoleBinding so authenticated users cannot create new projects, and prevents OpenShift from restoring it via the autoupdate annotation."
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - disable-self-provisioner
+    policyType: ConfigurationPolicy
+
+  - name: etcd-backup
+    path: policies/cluster-configs/etcd-backup
+    category: cluster-configs
+    description: "Deploys an automated etcd backup CronJob writing snapshots to a PersistentVolumeClaim"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-etcd-backup
+    policyType: ConfigurationPolicy
+
+  - name: etcd-encryption
+    path: policies/cluster-configs/etcd-encryption
+    category: cluster-configs
+    description: "Enables etcd data-at-rest encryption and monitors each API server component for encryption rollout completion"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "SC System and Communications Protection"
+      controls:
+        - "SC-28 Protection of Information at Rest"
+    dependencies: []
+    policySets:
+      - etcd-encryption
+    policyType: ConfigurationPolicy
+
+  - name: htpasswd-breakglass
+    path: policies/cluster-configs/htpasswd-breakglass
+    category: cluster-configs
+    description: "Configures an htpasswd IdentityProvider named BreakGlass-Emergency with a local redhat user for emergency cluster access when other identity providers are unavailable."
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - htpasswd-breakglass
+    policyType: ConfigurationPolicy
+
+  - name: image-registry-pvc
+    path: policies/cluster-configs/image-registry-pvc
+    category: cluster-configs
+    description: "Configures the OpenShift image registry to use a PVC (gp3-csi) for persistent storage."
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - image-registry-pvc
+    policyType: ConfigurationPolicy
+
+  - name: image-registry-config-s3
+    path: policies/cluster-configs/image-registry-s3
+    category: cluster-configs
+    description: "Configures the OpenShift image registry to use ODF S3 object storage via NooBaa"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - image-registry-s3
+    policyType: ConfigurationPolicy
+
+  - name: ocp-ingress-infra
+    path: policies/cluster-configs/ingress
+    category: cluster-configs
+    description: "Configures the default IngressController node placement and replica count based on available infra nodes"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-ingress
+    policyType: ConfigurationPolicy
+
+  - name: ingress-certificate
+    path: policies/cluster-configs/ingress
+    category: cluster-configs
+    description: "Issues a cert-manager Certificate for the default ingress domain and applies it to the IngressController"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - cert-manager-clusterissuer
+    policySets:
+      - cluster-configs-ingress
+    policyType: ConfigurationPolicy
+
+  - name: monitor-renew-default-ingress
+    path: policies/cluster-configs/ingress-renew-default-cert
+    category: cluster-configs
+    description: "Monitors default ingress certificate expiry and rotates router secrets when expiration is within 750 hours"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - ingress-certificate
+    policyType: ConfigurationPolicy
+
+  - name: node-kubeletconfigs
+    path: policies/cluster-configs/kubeletconfig
+    category: cluster-configs
+    description: "Applies KubeletConfig resources to enable auto-sized resource reservations on master and worker node pools"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-kubelet
+    policyType: ConfigurationPolicy
+
+  - name: infra-machineconfigpool
+    path: policies/cluster-configs/machineconfigpools
+    category: cluster-configs
+    description: "Creates the infra MachineConfigPool targeting nodes with the infra role but not the storage role"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-infra-mcp
+    policyType: ConfigurationPolicy
+
+  - name: storage-machineconfigpool
+    path: policies/cluster-configs/machineconfigpools
+    category: cluster-configs
+    description: "Creates the storage MachineConfigPool targeting nodes with both the infra and storage roles"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-storage-mcp
+    policyType: ConfigurationPolicy
+
+  - name: infra-machineset
+    path: policies/cluster-configs/machinesets
+    category: cluster-configs
+    description: "Creates infra MachineSet resources across availability zones for nodes with the infra role"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-infra-machinesets
+    policyType: ConfigurationPolicy
+
+  - name: storage-machineset
+    path: policies/cluster-configs/machinesets
+    category: cluster-configs
+    description: "Creates storage MachineSet resources across availability zones for nodes with the infra and storage roles"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-storage-machinesets
+    policyType: ConfigurationPolicy
+
+  - name: ocp-monitoring
+    path: policies/cluster-configs/monitoring
+    category: cluster-configs
+    description: "Configures cluster monitoring and user-workload monitoring; MCOA variant forwards alerts to the observability hub alertmanager"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-monitoring
+    policyType: ConfigurationPolicy
+
+  - name: node-runtimes
+    path: policies/cluster-configs/nodes
+    category: cluster-configs
+    description: "Applies base node-level configuration for cgroup version and CRI-O default runtime across all node pools"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-configs-nodes
+    policyType: ConfigurationPolicy
+
+  - name: remove-kubeadmin
+    path: policies/cluster-configs/remove-kubeadmin
+    category: cluster-configs
+    description: "Removes the kubeadmin secret from kube-system to disable the temporary bootstrap admin user after an identity provider has been configured."
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - remove-kubeadmin
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Cluster Health
+  # ---------------------------------------------------------------------------
+  - name: cluster-health-eval
+    path: policies/cluster-health
+    category: cluster-health
+    description: "Validates cluster health by checking version, ClusterOperators, MachineConfigPools, and node status"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CA Security Assessment and Authorization"
+      controls:
+        - "CA-7 Continuous Monitoring"
+    dependencies: []
+    policySets:
+      - cluster-health
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Cluster Maintenance
+  # ---------------------------------------------------------------------------
+  - name: clean-clusterrolebindings
+    path: policies/cluster-maintenance
+    category: cluster-maintenance
+    description: "Identifies stale ClusterRoleBindings for cleanup"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cluster-maintenance
+    policyType: ConfigurationPolicy
+
+  - name: clean-rolebindings
+    path: policies/cluster-maintenance
+    category: cluster-maintenance
+    description: "Identifies stale RoleBindings for cleanup"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cluster-maintenance
+    policyType: ConfigurationPolicy
+
+  - name: alert-clusterrole-unused
+    path: policies/cluster-maintenance
+    category: cluster-maintenance
+    description: "Alerts on unused ClusterRoles"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cluster-maintenance
+    policyType: ConfigurationPolicy
+
+  - name: clean-groups
+    path: policies/cluster-maintenance
+    category: cluster-maintenance
+    description: "Identifies stale Groups for cleanup"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cluster-maintenance
+    policyType: ConfigurationPolicy
+
+  - name: clean-failed-pods
+    path: policies/cluster-maintenance
+    category: cluster-maintenance
+    description: "Removes failed pods caused by node shutdown or CreateContainerError"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cluster-maintenance
+    policyType: ConfigurationPolicy
+
+  - name: clean-olm
+    path: policies/cluster-maintenance
+    category: cluster-maintenance
+    description: "Cleans up old OLM Jobs, ConfigMaps, and blocking InstallPlans"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cluster-maintenance
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Cluster Validations
+  # ---------------------------------------------------------------------------
+  - name: operator-lifecycle-status
+    path: policies/cluster-validations
+    category: cluster-validations
+    description: "Detects failed OLM InstallPlans, Subscriptions, and bundle unpacking Jobs across operator namespaces"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CA Security Assessment and Authorization"
+      controls:
+        - "CA-7 Continuous Monitoring"
+    dependencies: []
+    policySets:
+      - cluster-validations
+    policyType: ConfigurationPolicy
+
+  - name: validate-cluster-security
+    path: policies/cluster-validations
+    category: cluster-validations
+    description: "Validates cluster security configuration -- currently checks that FIPS mode is not enabled"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CA Security Assessment and Authorization"
+      controls:
+        - "CA-7 Continuous Monitoring"
+    dependencies: []
+    policySets:
+      - cluster-validations
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Cluster Version
+  # ---------------------------------------------------------------------------
+  - name: admin-acks
+    path: policies/cluster-version
+    category: cluster-version
+    description: "Ensures the admin-acks ConfigMap is present in openshift-config with acknowledgements for Kubernetes API removals across upgrade paths"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-version
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Gatekeeper Validations
+  # ---------------------------------------------------------------------------
+  - name: gp-valid-max-devworkspaces
+    path: policies/gatekeeper/validations/max-devspaces
+    category: gatekeeper
+    description: "Deploys a Gatekeeper ConstraintTemplate and Constraint to cap the number of concurrently active Dev Workspaces per cluster"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "AC Access Control"
+      controls:
+        - "AC-6 Least Privilege"
+    dependencies:
+      - gatekeeper-instance
+    policySets:
+      - gp-valid-max-devworkspaces
+    policyType: GatekeeperPolicy
+
+  - name: gp-valid-max-iamclusterbindings
+    path: policies/gatekeeper/validations/max-iamclusterbindings
+    category: gatekeeper
+    description: "Deploys a Gatekeeper ConstraintTemplate and Constraint to enforce a maximum number of users bound to a specified ClusterRole across all ClusterRoleBindings"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "AC Access Control"
+      controls:
+        - "AC-6 Least Privilege"
+    dependencies:
+      - gatekeeper-instance
+    policySets:
+      - gp-valid-max-iamclusterbindings
+    policyType: GatekeeperPolicy
+
+  - name: gp-valid-verifydeprecatedapi
+    path: policies/gatekeeper/validations/verify-deprecatedapi
+    category: gatekeeper
+    description: "Deploys a Gatekeeper ConstraintTemplate and per-Kubernetes-version Constraints that block use of deprecated APIs at admission time"
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-8 System Component Inventory"
+    dependencies:
+      - gatekeeper-instance
+    policySets:
+      - gp-valid-verifydeprecatedapi
+    policyType: GatekeeperPolicy
+
+  # ---------------------------------------------------------------------------
+  # Multicluster Data
+  # ---------------------------------------------------------------------------
+  - name: coredns-service-data
+    path: policies/multicluster-data
+    category: multicluster-data
+    description: "Creates ManagedClusterView resources on the hub to expose the CoreDNS service endpoint from each cluster participating in service mesh federation"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - multicluster-data-hub
+    policyType: ConfigurationPolicy
+
+  - name: coredns-secret
+    path: policies/multicluster-data
+    category: multicluster-data
+    description: "Distributes a CoreDNS configuration Secret to managed clusters, aggregating LoadBalancer endpoints collected via ManagedClusterViews on the hub"
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - multicluster-data-mc
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Operators
+  # ---------------------------------------------------------------------------
+  - name: acm-operator
+    path: policies/operators/acm
+    category: operators
+    description: "Manages ACM Operator install and version"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - acm-operator
+    policyType: OperatorPolicy
+
+  - name: acm-multiclusterhub
+    path: policies/operators/acm
+    category: operators
+    description: "Configures MultiClusterHub instance for ACM Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - acm-operator
+    policySets:
+      - acm-operator
+    policyType: ConfigurationPolicy
+
+  - name: acs-operator
+    path: policies/operators/acs
+    category: operators
+    description: "Installs and managed ACS Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - acs-operator-hub
+      - acs-operator-managed
+    policyType: OperatorPolicy
+
+  - name: acs-central
+    path: policies/operators/acs
+    category: operators
+    description: "Configures the Central component of ACS along with reporting health status of Central"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - acs-operator
+    policySets:
+      - acs-operator-hub
+    policyType: ConfigurationPolicy
+
+  - name: acs-central-init-bundle
+    path: policies/operators/acs
+    category: operators
+    description: "Configures Job to generate init-bundle"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - acs-central
+    policySets:
+      - acs-operator-hub
+    policyType: ConfigurationPolicy
+
+  - name: acs-central-init-bundle-cert
+    path: policies/operators/acs
+    category: operators
+    description: "Configures ACS hub SecuredCluster and CertificatePolicy for init-bundle expiration"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - acs-central-init-bundle
+    policySets:
+      - acs-operator-hub
+    policyType: ConfigurationPolicy
+
+  - name: acs-central-expired-certs
+    path: policies/operators/acs
+    category: operators
+    description: "When init-bundle is expired policy removes expired secrets and resets init-bundle job to create a new init-bundle."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - acs-central-init-bundle-cert
+    policySets:
+      - acs-operator-hub
+    policyType: ConfigurationPolicy
+
+  - name: acs-sensor-sync-certs
+    path: policies/operators/acs
+    category: operators
+    description: "Syncs ACS init-bundle secrets to policy namespace"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - acs-central-init-bundle-cert
+    policySets:
+      - acs-operator-hub
+    policyType: ConfigurationPolicy
+
+  - name: acs-sensor
+    path: policies/operators/acs
+    category: operators
+    description: "Propagate init-bundle secrets to managed cluster and create SecuredCluster"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - acs-operator-managed
+    policyType: ConfigurationPolicy
+
+  - name: ansible-automation-operator
+    path: policies/operators/ansible-automation-platform
+    category: operators
+    description: "Deploys AAP Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - ansible-automation-operator
+    policyType: OperatorPolicy
+
+  - name: ansible-automation-configure
+    path: policies/operators/ansible-automation-platform
+    category: operators
+    description: "Configures s3 storage and AAP components"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - ansible-automation-operator
+    policySets:
+      - ansible-automation-operator
+    policyType: ConfigurationPolicy
+
+  - name: ansible-automation-status
+    path: policies/operators/ansible-automation-platform
+    category: operators
+    description: "Validates the health of the AAP instance"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - ansible-automation-configure
+    policySets:
+      - ansible-automation-operator
+    policyType: ConfigurationPolicy
+
+  - name: cert-manager-operator
+    path: policies/operators/cert-manager
+    category: operators
+    description: "Installs cert-manager operator and monitoring"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cert-manager
+    policyType: OperatorPolicy
+
+  - name: cert-manager-clusterissuer
+    path: policies/operators/cert-manager
+    category: operators
+    description: "Deploys example CA based ClusterIssuer"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - cert-manager-operator
+    policySets:
+      - cert-manager
+    policyType: ConfigurationPolicy
+
+  - name: cluster-logging-operator
+    path: policies/operators/cluster-logging
+    category: operators
+    description: "Installs Cluster Logging Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - prepare-logging-migration
+    policySets:
+      - cluster-logging-operator
+    policyType: OperatorPolicy
+
+  - name: cluster-logging-configure
+    path: policies/operators/cluster-logging
+    category: operators
+    description: "Configures Loki storage, LokiStack, and ClusterLogForwarder"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - cluster-logging-operator
+      - loki-operator
+    policySets:
+      - cluster-logging-operator
+    policyType: ConfigurationPolicy
+
+  - name: logging-operator-status
+    path: policies/operators/cluster-logging
+    category: operators
+    description: "Monitors health of ClusterLogging deployment"
+    remediationAction: inform
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - cluster-logging-configure
+    policySets:
+      - cluster-logging-operator
+    policyType: ConfigurationPolicy
+
+  - name: prepare-logging-migration
+    path: policies/operators/cluster-logging/logs-6.x-migration
+    category: operators
+    description: "Checks whether the cluster is still running Cluster Logging 5.x and reports NonCompliant if migration is needed"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-logging-migration
+    policyType: ConfigurationPolicy
+
+  - name: clean-logging-migration
+    path: policies/operators/cluster-logging/logs-6.x-migration
+    category: operators
+    description: "Removes Cluster Logging 5.x resources (ClusterLogging, ClusterLogForwarder, Elasticsearch, PVCs, namespaces, and CRDs) to clear the path for a 6.x install"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - prepare-logging-migration
+    policySets:
+      - cluster-logging-migration
+    policyType: ConfigurationPolicy
+
+  - name: cluster-observability-operator
+    path: policies/operators/cluster-observability
+    category: operators
+    description: "Installs the Cluster Observability Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cluster-observability-operator
+    policyType: OperatorPolicy
+
+  - name: compliance-operator
+    path: policies/operators/compliance-operator
+    category: operators
+    description: "Installs the Compliance Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - compliance-operator
+    policyType: OperatorPolicy
+
+  - name: compliance-operator-example
+    path: policies/operators/compliance-operator
+    category: operators
+    description: "Configures an example scan using the nerc-cip profile"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - compliance-operator
+    policyType: ConfigurationPolicy
+
+  - name: odf-operator
+    path: policies/operators/data-foundation
+    category: operators
+    description: "Installs ODF Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - odf-operator
+    policyType: OperatorPolicy
+
+  - name: odf-configure
+    path: policies/operators/data-foundation
+    category: operators
+    description: "Configures ODF, only multi-object-gateway is deployed"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - odf-operator
+    policySets:
+      - odf-operator
+    policyType: ConfigurationPolicy
+
+  - name: odf-operator-status
+    path: policies/operators/data-foundation
+    category: operators
+    description: "Monitors health of ODF deployment"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - odf-configure
+    policySets:
+      - odf-operator
+    policyType: ConfigurationPolicy
+
+  - name: descheduler-operator
+    path: policies/operators/descheduler
+    category: operators
+    description: "Installs the Kube Descheduler operator into the openshift-kube-descheduler-operator namespace for evicting pods to allow the scheduler to reschedule them on more appropriate nodes."
+    remediationAction: enforce
+    severity: critical
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - descheduler-operator
+    policyType: OperatorPolicy
+
+  - name: developer-hub-operator
+    path: policies/operators/developer-hub
+    category: operators
+    description: "Installs Developer Hub Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - developer-hub-operator
+    policyType: OperatorPolicy
+
+  - name: developer-hub-acm-msa
+    path: policies/operators/developer-hub
+    category: operators
+    description: "Creates ManagedServiceAccount for configuring managed clusters in DevHub"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - enable-managed-serviceaccount
+    policySets:
+      - developer-hub-acm
+    policyType: ConfigurationPolicy
+
+  - name: developer-hub-configure
+    path: policies/operators/developer-hub
+    category: operators
+    description: "Configures developer hub instance"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - developer-hub-operator
+    policySets:
+      - developer-hub-operator
+    policyType: ConfigurationPolicy
+
+  - name: ebpf-manager-operator
+    path: policies/operators/ebpf-manager
+    category: operators
+    description: "Installs the eBPF Manager (bpfman) operator into the bpfman namespace for managing eBPF programs on cluster nodes."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - ebpf-manager
+    policyType: OperatorPolicy
+
+  - name: external-secrets-operator
+    path: policies/operators/external-secrets
+    category: operators
+    description: "Installs external-secrets Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - external-secrets-operator
+    policyType: OperatorPolicy
+
+  - name: file-integrity-operator
+    path: policies/operators/file-integrity
+    category: operators
+    description: "Installs file-integrity Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - file-integrity-operator
+    policyType: OperatorPolicy
+
+  - name: gatekeeper-operator
+    path: policies/operators/gatekeeper
+    category: operators
+    description: "Installs Gatekeeper Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gatekeeper-operator
+    policyType: OperatorPolicy
+
+  - name: gatekeeper-instance
+    path: policies/operators/gatekeeper
+    category: operators
+    description: "Configures Gatekeeper instance and monitoring, along with custom syncdata policy"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gatekeeper-operator
+    policyType: ConfigurationPolicy
+
+  - name: gatekeeper-violations
+    path: policies/operators/gatekeeper
+    category: operators
+    description: "Alerts when any Gatekeeper constraint reports a violation"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gatekeeper-operator
+    policyType: ConfigurationPolicy
+
+  - name: gitops-operator
+    path: policies/operators/gitops
+    category: operators
+    description: "Installs GitOps Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gitops-operator
+    policyType: OperatorPolicy
+
+  - name: gitops-instances
+    path: policies/operators/gitops
+    category: operators
+    description: "Configures multiple ArgoCd instances to demonstrate how to make use of kustomize"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - gitops-operator
+    policySets:
+      - gitops-operator
+    policyType: ConfigurationPolicy
+
+  - name: gitops-acm-policygenerator
+    path: policies/operators/gitops
+    category: operators
+    description: "Configures ArgoCD Repo server with the ACM PolicyGenerator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - gitops-instances
+    policySets:
+      - gitops-acm-hub
+    policyType: ConfigurationPolicy
+
+  - name: gitops-secret-rotation
+    path: policies/operators/gitops
+    category: operators
+    description: "Removes the openshift-gitops-operator-metrics-monitor-bearer-token secret when older than 7 days; the SA token controller recreates it with a fresh token."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - gitops-operator
+    policySets:
+      - gitops-operator
+    policyType: ConfigurationPolicy
+
+  - name: gitops-instance-status
+    path: policies/operators/gitops
+    category: operators
+    description: "Monitors the health of ArgoCd instances"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - gitops-instances
+    policySets:
+      - gitops-operator
+    policyType: ConfigurationPolicy
+
+  - name: ingress-node-firewall-operator
+    path: policies/operators/ingress-node-firewall
+    category: operators
+    description: "Installs the Ingress Node Firewall operator into the openshift-ingress-node-firewall namespace for managing eBPF-based stateless node-level ingress firewall rules."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - ingress-node-firewall
+    policyType: OperatorPolicy
+
+  - name: ingress-node-firewall-rules
+    path: policies/operators/ingress-node-firewall
+    category: operators
+    description: "Ingress node firewall rules for clusters where CoreDNS is exposed on hostNetwork (e.g. Azure). Blocks external DNS queries on port 53 while allowing all pods, services, and nodes within the cluster."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - ingress-node-firewall-operator
+    policySets:
+      - ingress-node-firewall
+    policyType: ConfigurationPolicy
+
+  - name: kiali-operator
+    path: policies/operators/kiali
+    category: operators
+    description: "Installs Kiali Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - kiali-operator
+    policyType: OperatorPolicy
+
+  - name: loki-operator
+    path: policies/operators/loki
+    category: operators
+    description: "Installs Loki Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - loki-operator
+    policyType: OperatorPolicy
+
+  - name: metallb-operator
+    path: policies/operators/metallb
+    category: operators
+    description: "Installs MetalLB Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - metallb-operator
+    policyType: OperatorPolicy
+
+  - name: migration-toolkit-for-virtualization
+    path: policies/operators/migration-toolkit
+    category: operators
+    description: "Installs the Migration Toolkit for Virtualization operator into the openshift-mtv namespace with cluster monitoring enabled, and deploys a ForkliftController instance after the operator is compliant."
+    remediationAction: enforce
+    severity: critical
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - migration-toolkit
+    policyType: OperatorPolicy
+
+  - name: network-observability-operator
+    path: policies/operators/network-observability
+    category: operators
+    description: "Install Network Observability Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - network-observability-operator
+    policyType: OperatorPolicy
+
+  - name: network-observability-configure
+    path: policies/operators/network-observability
+    category: operators
+    description: "Configured loki storage, Lokistack and flowcollector"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - network-observability-operator
+      - loki-operator
+    policySets:
+      - network-observability-operator
+    policyType: ConfigurationPolicy
+
+  - name: network-observability-status
+    path: policies/operators/network-observability
+    category: operators
+    description: "Monitor NetObserv operator health"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - network-observability-configure
+    policySets:
+      - network-observability-operator
+    policyType: ConfigurationPolicy
+
+  - name: nmstate-operator
+    path: policies/operators/nmstate
+    category: operators
+    description: "Installs the Kubernetes NMState operator into the openshift-nmstate namespace for declarative node network configuration management."
+    remediationAction: enforce
+    severity: critical
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - nmstate-operator
+    policyType: OperatorPolicy
+
+  - name: opentelemetry-operator
+    path: policies/operators/opentelemetry
+    category: operators
+    description: "Install OpenTelemetry Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - opentelemetry-operator
+    policyType: OperatorPolicy
+
+  - name: secondary-scheduler-operator
+    path: policies/operators/secondary-scheduler
+    category: operators
+    description: "Install Secondary Scheduler Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - secondary-scheduler-operator
+    policyType: OperatorPolicy
+
+  - name: servicemesh-operator
+    path: policies/operators/servicemesh
+    category: operators
+    description: "Install ServiceMesh Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - servicemesh-operator
+    policyType: OperatorPolicy
+
+  - name: servicemesh-controlplane
+    path: policies/operators/servicemesh
+    category: operators
+    description: "Configure ServiceMesh Control Plane including Kiali, Tempo, OpenTelemetry and Console Plugins"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - servicemesh-operator
+      - kiali-operator
+      - opentelemetry-operator
+      - tempo-operator
+      - odf-operator-status
+    policySets:
+      - servicemesh-operator
+    policyType: ConfigurationPolicy
+
+  - name: servicemesh-ingress
+    path: policies/operators/servicemesh
+    category: operators
+    description: "Configure ServiceMesh IngressGateway"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - servicemesh-controlplane
+    policySets:
+      - servicemesh-operator
+    policyType: ConfigurationPolicy
+
+  - name: talm-operator
+    path: policies/operators/talm
+    category: operators
+    description: "Installs TALM Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - talm-operator
+    policyType: OperatorPolicy
+
+  - name: tekton-operator
+    path: policies/operators/tekton
+    category: operators
+    description: "Install Pipelines Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - tekton-operator
+    policyType: OperatorPolicy
+
+  - name: tekton-rh-auth
+    path: policies/operators/tekton
+    category: operators
+    description: "Copies global pull-secret to every namespace labeled for teketon use"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - tekton-operator
+    policySets:
+      - tekton-operator
+    policyType: ConfigurationPolicy
+
+  - name: tekton-configure
+    path: policies/operators/tekton
+    category: operators
+    description: "Configures Tekton and TektonChains"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - tekton-operator
+    policySets:
+      - tekton-operator
+    policyType: ConfigurationPolicy
+
+  - name: tekton-operator-status
+    path: policies/operators/tekton
+    category: operators
+    description: "Monitors health of Tekton instance"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - tekton-operator
+    policySets:
+      - tekton-operator
+    policyType: ConfigurationPolicy
+
+  - name: tempo-operator
+    path: policies/operators/tempo
+    category: operators
+    description: "Installs Tempo Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - tempo-operator
+    policyType: OperatorPolicy
+
+  - name: openshift-virtualization
+    path: policies/operators/virtualization
+    category: operators
+    description: "Installs the OpenShift Virtualization operator into the openshift-cnv namespace with cluster monitoring enabled, and configures a HyperConverged instance with live migration on bond3.999."
+    remediationAction: enforce
+    severity: critical
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - virtualization
+    policyType: OperatorPolicy
+
+  - name: web-terminal
+    path: policies/operators/webterminal
+    category: operators
+    description: "Install Web-Terminal Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - webterminal-operator
+    policyType: OperatorPolicy
+
+  - name: workload-availability-operator
+    path: policies/operators/workload-availability
+    category: operators
+    description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, Node Maintenance, and Machine Deletion Operators"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - workload-availability-operator
+    policyType: OperatorPolicy
+
+  - name: workload-availability-remediation
+    path: policies/operators/workload-availability
+    category: operators
+    description: "Configures example node remediation using Self Node Remediation or Fence Agent Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - workload-availability-operator
+    policySets:
+      - workload-availability-operator
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Policy Sets (community)
+  # ---------------------------------------------------------------------------
+  - name: acm-policygenerator-downloader
+    path: policies/policy-sets/community/policygenerator-download
+    category: policy-sets
+    description: "Deploys PolicyGenerator CLI as a downloadable binary via ConsoleCLIDownload"
+    remediationAction: inform
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets: []
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Security / CVE Mitigation
+  # ---------------------------------------------------------------------------
+  - name: remove-global-build-access
+    path: policies/security/cve-mitigation/cve-2024-7387_cve-2024-45496
+    category: security
+    description: "Mitigates CVE-2024-7387 and CVE-2024-45496 by removing system:authenticated from global build strategy ClusterRoleBindings and restricting build access in admin/edit ClusterRoles"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cve-2024-7387-cve-2024-45496
+    policyType: ConfigurationPolicy
+
+  - name: cve-2026-31431-block-copyfail
+    path: policies/security/cve-mitigation/cve-2026-31431
+    category: security
+    description: "Mitigates CVE-2026-31431 with a privileged eBPF DaemonSet that blocks the vulnerable code path; temporary workaround until a patched kernel is available"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cve-2026-31431
+    policyType: ConfigurationPolicy
+
+  - name: cve-2026-43284-dirtyfrag
+    path: policies/security/cve-mitigation/cve-2026-43284
+    category: security
+    description: "Mitigates CVE-2026-43284 (Dirty Frag, RHSB-2026-003) by blacklisting the esp4, esp6, and rxrpc kernel modules and deploying a DaemonSet to unload them without requiring node reboots"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - cve-2026-43284
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Third-party
+  # ---------------------------------------------------------------------------
+  - name: cyberark
+    path: policies/third-party/cyberark
+    category: third-party
+    description: "Deploys CyberArk Conjur OSS via an ArgoCD Application using the official CyberArk Helm chart for secrets management."
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - cyberark
+    policyType: ConfigurationPolicy
+
+  - name: logicmonitor
+    path: policies/third-party/logicmonitor
+    category: third-party
+    description: "Deploys the LogicMonitor LM Container Helm chart via an ArgoCD Application, using a pre-existing logicmonitor-credentials Secret for API authentication."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - logicmonitor
+    policyType: ConfigurationPolicy
+
+  - name: portworx-operator
+    path: policies/third-party/portworx
+    category: third-party
+    description: "Installs Portworx storage operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - portworx-operator
+    policyType: OperatorPolicy
+
+  # ---------------------------------------------------------------------------
+  # Virt Management
+  # ---------------------------------------------------------------------------
+  - name: vm-delete-protection
+    path: policies/virt-management/vm-delete-protection
+    category: virt-management
+    description: "Ensures all VirtualMachines without the admin-allow-delete label have the kubevirt.io/vm-delete-protection label set, preventing accidental deletion."
+    remediationAction: enforce
+    severity: high
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - vm-delete-protection
+    policyType: ConfigurationPolicy
+
+  # ---------------------------------------------------------------------------
+  # Template Examples
+  # ---------------------------------------------------------------------------
+  - name: multi-cluster-gitops-hub
+    path: template-examples/gitops-multicluster
+    category: template-examples
+    description: "Configures ManagedServiceAccount and permissions for each app team to deploy and managed their application from a single argo to all ManagedClusters"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - gitops-operator
+    policySets:
+      - multi-cluster-gitops-hub
+    policyType: ConfigurationPolicy
+
+  - name: multi-cluster-gitops-scooter
+    path: template-examples/gitops-multicluster
+    category: template-examples
+    description: "Deploy an instance of Argo for Team Scooter"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gitops-team-scooter
+    policyType: ConfigurationPolicy
+
+  - name: multi-cluster-gitops-fozzie
+    path: template-examples/gitops-multicluster
+    category: template-examples
+    description: "Deploy an instance of Argo for Team Fozzie Bear"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - gitops-team-fozzie
+    policyType: ConfigurationPolicy
+
+  - name: hcp-auth
+    path: template-examples/hostedcontrolplane-auth
+    category: template-examples
+    description: "Configures authentication on HostedControlPlane clusters using hub templates"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets: []
+    policyType: ConfigurationPolicy
+
+  - name: metallb-sub-namecheck
+    path: template-examples/operators/subscription-name-check
+    category: template-examples
+    description: "Removes OLM Subscriptions where metadata.name does not match the package name (spec.name)"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - metallb-operator
+    policyType: ConfigurationPolicy
+
+  - name: metallb-operator
+    path: template-examples/operators/subscription-name-check
+    category: template-examples
+    description: "Installs MetalLB Operator"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies:
+      - metallb-sub-namecheck
+    policySets:
+      - metallb-operator
+    policyType: OperatorPolicy
+
+  - name: machinesets
+    path: template-examples/per-cluster-data
+    category: template-examples
+    description: "Creates MachineSets across three availability zones per cluster using configuration stored in a hub ConfigMap named after the cluster. The ConfigMap key matches the policy name."
+    remediationAction: enforce
+    severity: low
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - per-cluster-machinesets
+    policyType: ConfigurationPolicy
+
+  - name: compliance-operator-health
+    path: template-examples/validate-operator-health
+    category: template-examples
+    description: "Validates the Compliance Operator subscription state and deployment health"
+    remediationAction: inform
+    severity: medium
+    compliance:
+      standards:
+        - "NIST SP 800-53"
+      categories:
+        - "CM Configuration Management"
+      controls:
+        - "CM-2 Baseline Configuration"
+    dependencies: []
+    policySets:
+      - validate-operator-health
+    policyType: ConfigurationPolicy
+
+  - name: create-nncp-workers
+    path: template-examples/vlan-bond-NNCP
+    category: template-examples
+    description: "Creates NodeNetworkConfigurationPolicy resources for VLAN bond interfaces on worker nodes"
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets: []
+    policyType: ConfigurationPolicy
+
+  - name: vm-udn-vlan
+    path: template-examples/vm-udn-vlan
+    category: template-examples
+    description: "For each Localnet ClusterUserDefinedNetwork, creates an NMState NodeNetworkConfigurationPolicy to map the localnet to br-vmdata on worker nodes, and creates a primary Layer2 UserDefinedNetwork in every opted-in namespace."
+    remediationAction: enforce
+    severity: medium
+    compliance:
+      standards: []
+      categories: []
+      controls: []
+    dependencies: []
+    policySets:
+      - vm-udn-vlan
+    policyType: ConfigurationPolicy

@@ -39,7 +39,7 @@ policies:
   - name: multi-cluster-gitops
     description: "Deploy an instance of Argo for Team Scooter"
     hubTemplateOptions:
-      serviceAccountName: argo-mulitcluster-hub-serviceaccount
+      serviceAccountName: argo-multicluster-hub-serviceaccount
     consolidateManifests: true
     policySets:
       - gitops-team-scooter

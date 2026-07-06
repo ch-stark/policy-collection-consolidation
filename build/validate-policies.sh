@@ -1,5 +1,5 @@
 #!/bin/bash
-# Validate consolidated policy-collection: legacy YAML, PolicyGenerator standalone, and environment builds.
+# Validate PolicyGenerator standalone builds, policy-sets, environments, and tutorial.
 
 set -euo pipefail
 
@@ -23,20 +23,16 @@ if [ -z "${GITHUB_REPOSITORY_OWNER:-}" ]; then
 	GITHUB_REPOSITORY_OWNER=open-cluster-management-io
 fi
 
-validateRawPolicies() {
-	if [ -d "$1" ]; then
-		echo "Checking raw policies in $1"
-		find "${ROOT_DIR}/$1" -name "*.yaml" -exec "${KUBECONFORM}" \
-			-schema-location "${SCHEMA_DIR}/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json" \
-			-summary {} +
-	fi
-}
-
 validatePolicyGeneratorDir() {
 	local setpath="$1"
 	local abs_setpath="${ROOT_DIR}/${setpath}"
-	for kst in $(find "${abs_setpath}" -name "kustomization.y*ml"); do
+	local failed=0
+
+	for kst in $(find "${abs_setpath}" -name "kustomization.y*ml" | sort); do
 		project=$(dirname "${kst#${abs_setpath}/}")
+		if [ "${project}" = "." ]; then
+			project=""
+		fi
 		if grep -q "skip_validation: true" "${kst}" 2>/dev/null; then
 			echo "Skipping validation for ${kst}"
 			continue
@@ -44,18 +40,27 @@ validatePolicyGeneratorDir() {
 		echo "Generating policies: ${setpath}/${project}"
 		local output="${KUSTOMIZE_OUTPUT_ROOT}/${setpath}/${project}/kbout.yml"
 		mkdir -p "$(dirname "${output}")"
-		(
+		if ! (
 			cd "${abs_setpath}/${project}"
 			kustomize build --enable-alpha-plugins --enable-helm >"${output}"
-		)
-		if [ -d "${SCHEMA_DIR}" ]; then
-			"${KUBECONFORM}" \
+		); then
+			echo "ERROR: kustomize build failed for ${setpath}/${project}"
+			failed=1
+			continue
+		fi
+		if [ -d "${SCHEMA_DIR}" ] && [ -s "${output}" ]; then
+			if ! "${KUBECONFORM}" \
 				-schema-location "${SCHEMA_DIR}/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json" \
 				-schema-location default \
 				-ignore-missing-schemas \
-				-summary "${output}" || true
+				-summary "${output}"; then
+				echo "ERROR: kubeconform failed for ${setpath}/${project}"
+				failed=1
+			fi
 		fi
 	done
+
+	return "${failed}"
 }
 
 installTools() {
@@ -63,19 +68,26 @@ installTools() {
 	go install "github.com/yannh/kubeconform/cmd/kubeconform@${KC_VERSION}"
 	echo "::endgroup::"
 
-	if [ ! -d "${SCHEMA_DIR}" ]; then
+	if [ ! -f "${SCHEMA_DIR}/policy_v1.json" ]; then
+		rm -rf "${SCHEMA_DIR}"
 		mkdir "${SCHEMA_DIR}"
 		cd "${SCHEMA_DIR}"
 		curl -s -o crd-schema.py "https://raw.githubusercontent.com/yannh/${KUBECONFORM}/${KC_VERSION}/scripts/openapi2jsonschema.py"
 		chmod a+x crd-schema.py
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_placementbindings.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policies.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policysets.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policyautomations.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_02_clusters.open-cluster-management.io_placements.crd.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_00_clusters.open-cluster-management.io_managedclusters.crd.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_00_clusters.open-cluster-management.io_managedclustersets.crd.yaml"
-		./crd-schema.py "https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_01_clusters.open-cluster-management.io_managedclustersetbindings.crd.yaml"
+		local crds=(
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_placementbindings.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policies.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policysets.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policyautomations.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_02_clusters.open-cluster-management.io_placements.crd.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_00_clusters.open-cluster-management.io_managedclusters.crd.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_00_clusters.open-cluster-management.io_managedclustersets.crd.yaml"
+			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_01_clusters.open-cluster-management.io_managedclustersetbindings.crd.yaml"
+		)
+		for crd in "${crds[@]}"; do
+			sleep 1
+			./crd-schema.py "${crd}"
+		done
 		cd "${ROOT_DIR}"
 	fi
 
@@ -91,25 +103,31 @@ installTools() {
 
 installTools
 
-echo "=== Legacy raw policies ==="
-validateRawPolicies legacy/stable
-validateRawPolicies legacy/community
+FAILED=0
 
 echo "=== PolicyGenerator standalone (policies/) ==="
-validatePolicyGeneratorDir policies
+validatePolicyGeneratorDir policies || FAILED=1
 
 echo "=== PolicyGenerator standalone (template-examples/) ==="
-validatePolicyGeneratorDir template-examples
+validatePolicyGeneratorDir template-examples || FAILED=1
 
-echo "=== PolicyGenerator standalone (policy-sets/) ==="
-validatePolicyGeneratorDir policies/policy-sets/stable
-validatePolicyGeneratorDir policies/policy-sets/community
+echo "=== PolicyGenerator policy-sets (stable/) ==="
+validatePolicyGeneratorDir policies/policy-sets/stable || FAILED=1
+
+echo "=== PolicyGenerator policy-sets (community/) ==="
+validatePolicyGeneratorDir policies/policy-sets/community || FAILED=1
 
 echo "=== Environment builds (ArgoCD paths) ==="
-validatePolicyGeneratorDir environments
+validatePolicyGeneratorDir environments || FAILED=1
 
-echo "=== PolicyGenerator examples ==="
-validatePolicyGeneratorDir policies/examples
+echo "=== PolicyGenerator tutorial ==="
+validatePolicyGeneratorDir tutorial || FAILED=1
 
 rm -rf "${SCHEMA_DIR}" "${KUSTOMIZE_OUTPUT_ROOT}"
+
+if [ "${FAILED}" -ne 0 ]; then
+	echo "Validation failed."
+	exit 1
+fi
+
 echo "Validation complete."

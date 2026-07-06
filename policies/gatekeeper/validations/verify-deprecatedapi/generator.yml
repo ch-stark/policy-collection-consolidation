@@ -31,40 +31,40 @@ policies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
-      - path: verify-deprecatedapi/constrainttemplate.yml
+      - path: constrainttemplate.yml
         name: verifydeprecatedapi-constrainttemplate
-      - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
+      - path: verifydeprecatedapi-1.16.yml
         name: verifydeprecatedapi-1.16
         # extraDependencies:
         #   - name: verifydeprecatedapi
         #     apiVersion: templates.gatekeeper.sh/v1beta1
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
-      - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
+      - path: verifydeprecatedapi-1.22.yml
         name: verifydeprecatedapi-1.22
         # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
-      - path: verify-deprecatedapi/verifydeprecatedapi-1.25.yml
+      - path: verifydeprecatedapi-1.25.yml
         name: verifydeprecatedapi-1.25
         # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
-      - path: verify-deprecatedapi/verifydeprecatedapi-1.26.yml
+      - path: verifydeprecatedapi-1.26.yml
         name: verifydeprecatedapi-1.26
         # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
-      - path: verify-deprecatedapi/verifydeprecatedapi-1.27.yml
+      - path: verifydeprecatedapi-1.27.yml
         name: verifydeprecatedapi-1.27
         # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
-      - path: verify-deprecatedapi/verifydeprecatedapi-1.29.yml
+      - path: verifydeprecatedapi-1.29.yml
         name: verifydeprecatedapi-1.29
         # extraDependencies:
         #   - name: verifydeprecatedapi

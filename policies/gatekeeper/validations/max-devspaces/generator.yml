@@ -31,9 +31,9 @@ policies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
-      - path: max-devspaces/constrainttemplate.yml
+      - path: constrainttemplate.yml
         name: maxdevworkspaces-constrainttemplate
-      - path: max-devspaces/maxdevworkspaces.yml
+      - path: maxdevworkspaces.yml
         name: max-dev-workspaces
         # extraDependencies:
         #   - name: maxdevworkspaces

@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tutorial-hub-lookup
+  namespace: tutorial-demo
+data:
+  # Resolves cluster name at template evaluation time on the hub
+  managedCluster: '{{hub .ManagedClusterName hub}}'
+  policyNamespace: '{{hub .PolicyNamespace hub}}'

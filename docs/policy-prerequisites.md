@@ -23,7 +23,7 @@ Rules for policy formats:
     ## Details
     ACM Minimal Version: 2.12
 
-    Documentation: [LINK to DOCS](httos://docs.example.com)
+    Documentation: [LINK to DOCS](https://docs.example.com)
 
     ---
     **Notes:**

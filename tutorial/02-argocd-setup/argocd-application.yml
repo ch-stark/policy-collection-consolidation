@@ -1,0 +1,24 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tutorial-policies
+  namespace: openshift-gitops
+  labels:
+    tutorial.open-cluster-management.io/module: argocd-setup
+spec:
+  project: default
+  source:
+    # Replace with your git URL when deploying to a cluster
+    repoURL: https://example.com/local-only/placeholder.git
+    targetRevision: main
+    path: tutorial
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tutorial-policies
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

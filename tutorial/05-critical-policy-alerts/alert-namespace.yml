@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tutorial-alerts
+  labels:
+    tutorial.open-cluster-management.io/module: critical-alerts

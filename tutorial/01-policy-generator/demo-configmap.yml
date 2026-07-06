@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tutorial-policy-generator-demo
+  namespace: tutorial-demo
+data:
+  message: "Created by PolicyGenerator — see tutorial/01-policy-generator"

@@ -31,9 +31,9 @@ policies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
-      - path: max-iamclusterbindings/constrainttemplate.yml
+      - path: constrainttemplate.yml
         name: maxiamclusterbindings-constrainttemplate
-      - path: max-iamclusterbindings/maxiamclusterbindings.yml
+      - path: maxiamclusterbindings.yml
         name: max-cluster-admins
         # extraDependencies:
         #   - name: maxclusteradmins

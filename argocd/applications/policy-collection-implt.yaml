@@ -11,8 +11,10 @@ spec:
   project: default
   source:
     repoURL: https://github.com/YOUR_ORG/policy-collection-consolidation.git
-    targetRevision: main
+    targetRevision: master
     path: environments/implt
+    kustomize:
+      buildOptions: --enable-alpha-plugins --enable-helm
   destination:
     server: https://kubernetes.default.svc
     namespace: acm-policies-implt

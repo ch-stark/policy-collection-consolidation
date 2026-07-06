@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tutorial-cluster-info
+  namespace: tutorial-demo
+data:
+  openshiftVersion: '{{ fromClusterClaim "version.openshift.io" }}'
+  clusterName: '{{hub .ManagedClusterName hub}}'
+  generatedBy: tutorial/07-policy-templates

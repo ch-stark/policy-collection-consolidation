@@ -35,29 +35,30 @@ flowchart TD
 | Path | Role |
 |------|------|
 | `policies/` | PolicyGenerator source projects grouped by domain |
+| `policies/policy-catalog.yaml` | Machine-readable policy index (custom schema, not a K8s CRD) |
 | `environments/` | Per-fleet kustomize overlay (namespace, ClusterSet, suffix) |
 | `kustomize-configs/` | Shared kustomize Component (ClusterSet refs, PolicySet naming) |
 | `local-cluster/` | Hub ManagedCluster patches (prod only) |
 | `argocd/` | ArgoCD Application definitions |
-| `legacy/` | Deprecated raw policies (migration source) |
 | `template-examples/` | Reusable patterns not tied to a full policy |
+| `tutorial/` | Step-by-step learning modules |
 
 ## Consolidation sources
 
 | Source | Migrated to | Notes |
 |--------|-------------|-------|
-| policy-collection `stable/` | `legacy/stable/` | Raw YAML, migrate over time |
-| policy-collection `community/` | `legacy/community/` | Raw YAML, migrate over time |
-| policy-collection `policygenerator/policy-sets/` | `policies/policy-sets/` | Already PolicyGenerator |
+| policy-collection `policygenerator/policy-sets/` | `policies/policy-sets/` | PolicyGenerator PolicySets |
+| policy-collection raw YAML | Removed | Use PolicyGenerator under `policies/` instead |
 | bry-acm-policy-samples `policies/` | `policies/` | Primary policy library |
 | bry-acm-policy-samples `environments/` | `environments/` | Environment model |
 | bry-acm-policy-samples `template-examples/` | `template-examples/` | Template patterns |
 
 ## What was removed
 
+- `legacy/` raw Policy YAML — consolidated into PolicyGenerator projects
 - `deploy/subscription.yaml`, `deploy/deploy.sh` — appsub GitOps
-- `policygenerator/subscription.yaml` — appsub demo
-- Duplicate Kyverno policies (upstream policy-collection cleanup)
+- `policygenerator/` duplicate content — moved under `policies/`
+- ARO-specific and third-party samples not carried forward (e.g. `zts-xcrypt`)
 
 ## Namespace strategy
 
@@ -67,4 +68,4 @@ flowchart TD
 
 ## PolicySet strategy
 
-Large bundles (openshift-plus, gatekeeper sets) live in `policies/policy-sets/` and are **opt-in** via separate ArgoCD Applications or explicit kustomize `resources` entries.
+Large bundles (openshift-plus, gatekeeper sets) live in `policies/policy-sets/` and are **opt-in**. They are validated by `./build/validate-policies.sh` but not included in the default `policies/kustomization.yaml` environment build.

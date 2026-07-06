@@ -29,7 +29,7 @@ cd deploy
 | Flag | Description | Default |
 |------|-------------|---------|
 | `-u` | Git repository URL | policy-collection main repo |
-| `-b` | Branch or tag | `main` |
+| `-b` | Branch or tag | `master` |
 | `-p` | Path in repo | `environments/dev` |
 | `-n` | Target namespace | `acm-policies-dev` |
 | `-a` | Application name | `policy-collection-dev` |
@@ -53,4 +53,3 @@ The following appsub-based deployment files were removed:
 
 - `deploy.sh`, `remove.sh`
 - `subscription.yaml`, `channel.yaml`, `application.yaml`
-- `policygenerator/subscription.yaml`

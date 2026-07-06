@@ -1,0 +1,12 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  generateName: tutorial-
+  namespace: openshift-operators
+status:
+  state: UpgradePending
+  conditions:
+    - reason: InstallPlanFailed
+      status: 'True'
+      type: Failed

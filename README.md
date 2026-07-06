@@ -1,15 +1,16 @@
 # policy-collection-consolidation
 
-Local consolidated ACM governance policies for [Open Cluster Management](https://open-cluster-management.io/), built with **PolicyGenerator** and deployed via **ArgoCD**.
+WIP DO NOT USE IN PRODUCTION 
+
+
+Consolidated ACM governance policies for [Open Cluster Management](https://open-cluster-management.io/) and **Red Hat Advanced Cluster Management 2.15+**, built with **PolicyGenerator** and deployed via **ArgoCD** (or applied directly with `kustomize`/`kubectl`).
 
 Sources merged into this repository:
 
 - [open-cluster-management-io/policy-collection](https://github.com/open-cluster-management-io/policy-collection)
 - [brian-jarvis/bry-acm-policy-samples](https://github.com/brian-jarvis/bry-acm-policy-samples)
 
-This is a **standalone local repository**. Push to your Git remote and update `repoURL` in `argocd/applications/` before syncing to a cluster.
-
-> **For AI agents:** start with [AGENTS.md](AGENTS.md)
+> **For AI agents:** start with [AGENTS.md](AGENTS.md) and the machine-readable [policy-catalog.yaml](policies/policy-catalog.yaml)
 
 ## Quick start
 
@@ -26,7 +27,16 @@ cd policies/operators/compliance-operator
 kustomize build --enable-alpha-plugins
 ```
 
+### Apply directly (no ArgoCD)
+
+```bash
+cd policies/<category>/<policy-name>
+kustomize build --enable-alpha-plugins | kubectl apply -f -
+```
+
 ### Deploy via ArgoCD
+
+Update `repoURL` in `argocd/applications/` to point at your git remote, then:
 
 ```bash
 kubectl apply -f argocd/applications/policy-collection-dev.yaml
@@ -39,10 +49,11 @@ See [argocd/README.md](argocd/README.md) for full deployment guide.
 | Path | Description |
 |------|-------------|
 | [`policies/`](policies/) | PolicyGenerator projects (primary content) |
+| [`policies/policy-catalog.yaml`](policies/policy-catalog.yaml) | Machine-readable policy index (AI-ready) |
 | [`environments/`](environments/) | Dev/implt/prod kustomize overlays |
-| [`argocd/`](argocd/) | ArgoCD Application manifests |
-| [`template-examples/`](template-examples/) | Standalone template patterns |
-| [`legacy/`](legacy/) | Deprecated raw Policy YAML (migration source) |
+| [`argocd/`](argocd/) | ArgoCD Application manifests (templates) |
+| [`template-examples/`](template-examples/) | Advanced PolicyGenerator template patterns |
+| [`tutorial/`](tutorial/) | Step-by-step PolicyGenerator, ArgoCD, dependencies, alerts |
 | [`docs/`](docs/) | Architecture, standards, policy catalog |
 
 ## Deployment model
@@ -50,8 +61,9 @@ See [argocd/README.md](argocd/README.md) for full deployment guide.
 | Supported | Not supported |
 |-----------|---------------|
 | ArgoCD (OpenShift GitOps) | ACM Subscription/Channel |
-| PolicyGenerator + Kustomize | PlacementRule (deprecated) |
-| Placement API | Application Lifecycle addon |
+| Direct `kustomize build` + `kubectl apply` | PlacementRule (deprecated) |
+| PolicyGenerator + Kustomize | Application Lifecycle addon |
+| Placement API | Raw Policy CRs (use PolicyGenerator) |
 
 ## Policy organization
 
@@ -61,7 +73,22 @@ Policies are grouped by function:
 - **cluster-configs/** — OpenShift cluster configuration
 - **acm-configs/** — ACM hub and spoke settings
 - **security/** — CVE mitigations and security controls
+- **cluster-health/** — Cluster health monitoring
+- **cluster-maintenance/** — Cluster hygiene and cleanup
+- **cluster-version/** — Cluster upgrade management
 - **policy-sets/** — Opt-in bundles (OpenShift Plus, Gatekeeper, Kyverno)
+- **third-party/** — Third-party integrations (CyberArk, LogicMonitor, Portworx)
+- **gatekeeper/** — Gatekeeper constraint templates and validations
+- **virt-management/** — OpenShift Virtualization policies
+
+## AI readiness
+
+This repository is designed to be consumed by AI tools:
+
+- **[AGENTS.md](AGENTS.md)** — structured context for AI agents (repository map, rules, workflows)
+- **[policies/policy-catalog.yaml](policies/policy-catalog.yaml)** — machine-readable index of all policies with metadata (category, description, ACM version, NIST controls, remediation action)
+- **[CLAUDE.md](CLAUDE.md)** — Claude Code agent instructions
+- Every `generator.yml` contains structured NIST 800-53 compliance metadata
 
 ## Contributing
 
@@ -76,7 +103,4 @@ Policies are grouped by function:
 - [docs/architecture.md](docs/architecture.md) — system design
 - [docs/policy-list.md](docs/policy-list.md) — policy catalog
 - [deploy/README.md](deploy/README.md) — ArgoCD deployment helper
-
-## Community
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+- [tutorial/README.md](tutorial/README.md) — hands-on tutorial

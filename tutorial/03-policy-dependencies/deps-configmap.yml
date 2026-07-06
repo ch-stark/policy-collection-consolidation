@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tutorial-deps-result
+  namespace: tutorial-deps
+data:
+  status: "This ConfigMap is deployed only after tutorial-deps-namespace is Compliant"
