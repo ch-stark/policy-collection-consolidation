@@ -1,0 +1,59 @@
+name: Validation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validation-tests:
+    runs-on: ubuntu-latest
+    name: Schema and Kustomize
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Verify content
+        run: |
+          ./build/validate-policies.sh
+
+  linting:
+    runs-on: ubuntu-latest
+    name: Linting
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install template-resolver CLI
+        run: |
+          go install github.com/stolostron/go-template-utils/v7/cmd/template-resolver@main
+
+      - name: Lint policies
+        run: |
+          exit_code=0
+          ./build/lint.sh || exit_code=$?
+          if [[ ${exit_code} == 2 ]] || [[ ${exit_code} == 3 ]]; then
+            echo "LINT_VIOLATIONS=true" >>"${GITHUB_ENV}"
+          fi
+          # Exit code 3 means no error violations were found, so don't fail the job
+          if [[ ${exit_code} == 3 ]]; then
+            exit_code=0
+          fi
+          exit "${exit_code}"
+
+      - name: Upload SARIF file
+        if: always() && env.LINT_VIOLATIONS == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: merged.sarif

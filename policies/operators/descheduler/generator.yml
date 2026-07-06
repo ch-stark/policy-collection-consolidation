@@ -1,0 +1,48 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-descheduler
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - descheduler-operator
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: descheduler-operator
+  severity: critical
+
+placementBindingDefaults:
+  name: "descheduler-binding"
+
+policies:
+  - name: descheduler-operator
+    description: "Installs the Kube Descheduler operator into the openshift-kube-descheduler-operator namespace for evicting pods to allow the scheduler to reschedule them on more appropriate nodes."
+    manifests:
+      - path: namespace.yml
+        name: descheduler-namespace
+
+      - path: operatorpolicy.yml
+
+      - path: kubedescheduler.yml
+        name: descheduler-kubevirt-migrate
+        extraDependencies:
+          - name: descheduler-operator-install
+            kind: OperatorPolicy
+            apiVersion: policy.open-cluster-management.io/v1beta1
+            compliance: "Compliant"
+
+      - path: worker-kernelargs.yml
+        name: worker-psi-kernelarg
+
+policySets:
+  - name: descheduler-operator
+    placement:
+      placementName: "ft-descheduler--enabled"

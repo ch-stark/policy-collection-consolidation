@@ -1,0 +1,62 @@
+---
+object-templates-raw: |
+  {{/* ##  Create a list of all expected deployments in open-cluster-management-observability ## */}}
+  {{- $depList := list "observability-grafana"
+                        "observability-observatorium-api"
+                        "observability-observatorium-operator"
+                        "observability-rbac-query-proxy"
+                        "observability-thanos-query"
+                        "observability-thanos-query-frontend"
+                        "observability-thanos-receive-controller"
+  }}
+
+  {{- $sSetList := list "observability-alertmanager"
+                        "observability-thanos-compact"
+                        "observability-thanos-query-frontend-memcached"
+                        "observability-thanos-receive-default"
+                        "observability-thanos-rule"
+                        "observability-thanos-store-memcached"
+                        "observability-thanos-store-shard-0"
+                        "observability-thanos-store-shard-1"
+                        "observability-thanos-store-shard-2"
+  }}
+
+  ## Create a CompilianceType objectDefinition for each deployment
+  {{- range $depName := $depList }}
+    {{- $dep := (lookup "apps/v1" "Deployment" "open-cluster-management-observability" $depName) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        namespace: open-cluster-management-observability
+        name: {{ $depName }}
+      status:
+        replicas: {{ $dep.spec.replicas }}
+        updatedReplicas: {{ $dep.spec.replicas }}
+        readyReplicas: {{ $dep.spec.replicas }}
+        availableReplicas: {{ $dep.spec.replicas }}
+        conditions:
+          - type: Available
+            status: 'True'
+  {{- end }}
+
+
+  ## Create a CompilianceType objectDefinition for each deployment
+  {{- range $sSetName := $sSetList }}
+    {{- $sSet := (lookup "apps/v1" "StatefulSet" "open-cluster-management-observability" $sSetName) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: StatefulSet
+      apiVersion: apps/v1
+      metadata:
+        namespace: open-cluster-management-observability
+        name: {{ $sSetName }}
+      status:
+        availableReplicas: {{ $sSet.spec.replicas }}
+        currentReplicas: {{ $sSet.spec.replicas }}
+        updatedReplicas: {{ $sSet.spec.replicas }}
+        replicas: {{ $sSet.spec.replicas }}
+        collisionCount: 0
+        readyReplicas: {{ $sSet.spec.replicas }}
+  {{- end }}

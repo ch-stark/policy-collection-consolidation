@@ -1,0 +1,56 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-cluster
+  namespace: acm-policies
+data:
+  NODE01: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          mtu: 9000
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a1:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a1:02"
+          bonds:
+          - name: bond0
+            mode: "active-backup"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.12
+                prefix-length: 24
+
+  NODE02: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          mtu: 9000
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a2:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a2:02"
+          bonds:
+          - name: bond0
+            mode: "active-backup"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.13
+                prefix-length: 24
+
+        - name: bond-vm-bridge
+          mtu: 9000
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:b2:01"
+          - name: port2
+            macAddress: "00:50:56:b1:c2:02"
+          bonds:
+          - name: bond0
+            mode: "active-backup"
+          bridges:
+            - name: br-vm-data
+              type: ovs-bridge

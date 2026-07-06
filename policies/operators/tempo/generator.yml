@@ -1,0 +1,42 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-tempo
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - tempo-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: tempo-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "tempo-binding"
+
+policies:
+  - name: tempo-operator
+    description: "Installs Tempo Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: tempo-namespace
+
+      - path: operatorpolicy.yml
+        name: tempo-operator-install
+
+policySets:
+  - name: tempo-operator
+    placement:
+      placementName: "ft-tempo--enabled"

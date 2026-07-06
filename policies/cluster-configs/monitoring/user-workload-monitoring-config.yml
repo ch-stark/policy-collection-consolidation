@@ -1,0 +1,89 @@
+---
+object-templates-raw: |
+  {{- $isLocalCluster := (ne "" "{{hub index $.ManagedClusterLabels "local-cluster" hub}}") }}
+  {{- $obsEnabled := false }}
+  {{- $hubInfo := "" }}
+  {{- $secretSuffix := ""}}
+
+  {{- $obsHubInfoSecret := (lookup "v1" "Secret" ($isLocalCluster | ternary "open-cluster-management-observability" "open-cluster-management-addon-observability") "hub-info-secret") }}
+  {{- if $obsHubInfoSecret }}
+    {{- $obsEnabled = true }}
+    {{- $hubInfo = (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec | fromYaml }}
+    {{- $secretSuffix = (printf "-%s" (index $hubInfo "hub-cluster-id")) }}
+  {{- end }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: user-workload-monitoring-config
+        namespace: openshift-user-workload-monitoring
+      data:
+        config.yaml: |
+          prometheus:
+            retention: 7d
+            retentionSize: 100GB
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 100Gi
+                storageClassName: gp3-csi
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            externalLabels:
+              instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+              product: {{ fromClusterClaim "product.open-cluster-management.io" }}
+              managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
+
+  {{- if $obsEnabled }}
+            additionalAlertmanagerConfigs:
+            - apiVersion: v2
+              bearerToken:
+                key: token
+                name: observability-alertmanager-accessor{{ $secretSuffix }}
+              scheme: https
+              staticConfigs:
+              - {{ trimAll "/" (printf "alertmanager-open-cluster-management-observability.%s" (regexFind "apps.*?/" (index $hubInfo "observatorium-api-endpoint"))) }}
+              tlsConfig:
+                ca:
+                  key: service-ca.crt
+                  name: hub-alertmanager-router-ca{{ $secretSuffix }}
+                insecureSkipVerify: false
+  {{- end }}
+
+          prometheusOperator:
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+          thanosRuler:
+            retention: 7d
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 100Gi
+                storageClassName: gp3-csi
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra

@@ -1,0 +1,48 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-opentelemetry
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - opentelemetry-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: opentelemetry-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "opentelemetry-binding"
+
+policies:
+  - name: opentelemetry-operator
+    description: "Install OpenTelemetry Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: otel-namespace
+
+      - path: operatorpolicy.yml
+        name: opentelemetry-operator-install
+
+      - path: clusterrole.yml
+        name: otel-clusterrole
+
+      - path: clusterrolebinding.yml
+        name: otel-clusterrolebinding
+
+policySets:
+  - name: opentelemetry-operator
+    placement:
+      placementName: "ft-opentelemetry--enabled"

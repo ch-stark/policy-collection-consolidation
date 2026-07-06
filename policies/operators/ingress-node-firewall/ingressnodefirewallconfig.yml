@@ -1,0 +1,11 @@
+---
+apiVersion: ingressnodefirewall.openshift.io/v1alpha1
+kind: IngressNodeFirewallConfig
+metadata:
+  name: ingressnodefirewallconfig
+  namespace: openshift-ingress-node-firewall
+spec:
+  nodeSelector: {}
+  ## below set to false as ebpf operator is Tech Preview.  Uncomment to use
+  ebpfProgramManagerMode: false
+  # ebpfProgramManagerMode: '{{hub (eq (index $.ManagedClusterLabels "ebpf-manager") "enabled") | toRawJson | toBool hub}}'

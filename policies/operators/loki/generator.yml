@@ -1,0 +1,44 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-loki
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - loki-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: loki-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "loki-binding"
+
+policies:
+  - name: loki-operator
+    description: "Installs Loki Operator"
+    manifests:
+      - path: namespace.yml
+        name: loki-namespace
+
+      - path: metrics-secret.yml
+        name: loki-metrics-secret
+
+      - path: operatorpolicy.yml
+        name: loki-operator-install
+
+policySets:
+  - name: loki-operator
+    placement:
+      placementName: "ft-loki--enabled"

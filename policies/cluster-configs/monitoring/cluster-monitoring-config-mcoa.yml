@@ -1,0 +1,91 @@
+---
+object-templates-raw: |
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: cluster-monitoring-config
+        namespace: openshift-monitoring
+      data:
+        config.yaml: |
+          alertmanagerMain:
+            enableUserAlertmanagerConfig: true
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 10Gi
+                storageClassName: gp3-csi
+
+          enableUserWorkload: true
+
+          nodeExporter:
+            collectors:
+              buddyinfo: {}
+              cpufreq: {}
+              ksmd: {}
+              mountstats: {}
+              netclass: {}
+              netdev: {}
+              processes: {}
+              systemd: {}
+              tcpstat: {}
+
+          prometheusK8s:
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+  {{hub- $ManagedClusterAnnotations := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" $.ManagedClusterName).metadata.annotations hub}}
+  {{hub- if not (empty (index $ManagedClusterAnnotations "hub-cluster-id")) hub}}
+            additionalAlertmanagerConfigs:
+            - apiVersion: v2
+              bearerToken:
+                key: token
+                name: 'observability-alertmanager-accessor-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
+              scheme: https
+              staticConfigs:
+              - {{hub index $ManagedClusterAnnotations "hub-alertmanager-url" hub}}
+              tlsConfig:
+                ca:
+                  key: service-ca.crt
+                  name: 'hub-alertmanager-router-ca-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
+                insecureSkipVerify: false
+  {{hub- end hub}}
+            externalLabels:
+              instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+              managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
+              product: {{ fromClusterClaim "product.open-cluster-management.io" }}
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+
+            retention: 7d
+            retentionSize: 100GB
+
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 100Gi
+                storageClassName: gp3-csi
+
+
+  {{/* ##  group all remaining components together since the only config is for infra nodes  ## */}}
+  {{- range $key := (list "prometheusOperator" "kubeStateMetrics" "openshiftStateMetrics" "telemeterClient" "thanosQuerier")}}
+          {{ $key }}:
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+  {{- end }}

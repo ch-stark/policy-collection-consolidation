@@ -1,0 +1,34 @@
+# WARNING: ClusterPolicy was DEPRECATED in Kyverno v1.17
+# To update your policy, browse the official Kyverno policy collection
+# for current examples: https://kyverno.io/policies
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-blueteam-to-its-appproject
+spec:
+  validationFailureAction: enforce
+  background: false
+  rules:
+    - name: restrict-to-argoproject
+      match:
+        resources:
+          kinds:
+            - argoproj.io/v1alpha1/ApplicationSet
+        subjects:
+          - kind: Group
+            name: blue-sre-group
+      preconditions:
+        any:
+          - key: "{{request.operation}}"
+            operator: In
+            value:
+              - CREATE
+              - UPDATE
+      validate:
+        message: "For any `blue-sre-group` member, creation of ArgoCD Application must be against the `blueproject` AppProject."
+        pattern:
+          spec:
+            template:
+              spec:
+                project: blueteam

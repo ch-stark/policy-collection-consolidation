@@ -1,0 +1,75 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-tekton
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - tekton-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: pipelines-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "tekton-binding"
+
+policies:
+  - name: tekton-operator
+    description: "Install Pipelines Operator"
+    manifests:
+      - path: namespace.yml
+        name: tkn-namespace
+
+      - path: operatorpolicy.yml
+        name: pipelines-operator-install
+
+  - name: tekton-rh-auth
+    description: "Copies global pull-secret to every namespace labeled for teketon use"
+    namespaceSelector:
+      matchLabels:
+        tekton.rh-reg-auth: true
+    dependencies:
+      - name: "tekton-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: pull-secret-auth/
+        name: pipeline-pull-secret
+
+  - name: tekton-configure
+    description: "Configures Tekton and TektonChains"
+    dependencies:
+      - name: "tekton-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: tektonchains.yml
+        name: tekton-chain
+
+      - path: tektonconfig.yml
+        name: tekton-config
+
+  - name: tekton-operator-status
+    description: "Monitors health of Tekton instance"
+    remediationAction: inform
+    dependencies:
+      - name: "tekton-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: health/tekton-status.yml
+        name: tekton-status
+
+policySets:
+  - name: tekton-operator
+    placement:
+      placementName: "ft-tekton--enabled"

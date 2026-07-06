@@ -1,0 +1,44 @@
+---
+object-templates-raw: |
+  {{- $px_label_script := `
+    #!/bin/bash
+    pxctl cluster provision-status | grep "$(hostname)" | grep '8.0 TiB' | awk '{ print $7 }' | xargs -I{} pxctl service pool update --uid {} --labels "mediatype=px-pure-x701"
+    pxctl cluster provision-status | grep "$(hostname)" | grep '2.0 TiB' | awk '{ print $7 }' | xargs -I{} pxctl service pool update --uid {} --labels "mediatype=px-pure-x703"
+    `
+  }}
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: worker
+  name: 99-worker-px-pool-label
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+        - path: /usr/local/bin/px-pool-label.sh
+          mode: 0755
+          overwrite: true
+          contents:
+            source: 'data:text/plain;charset=utf-8;base64,{{ $px_label_script | base64enc }}'
+    systemd:
+      units:
+        - name: px-pool-label.service
+          enabled: true
+          contents: |
+            [Unit]
+            Description=Label Portworx pool with mediatype px-pure-x703
+            After=portworx.service
+            Requires=portworx.service
+            ConditionPathExists=!/var/lib/px-pool-label.done
+
+            [Service]
+            Type=oneshot
+            RemainAfterExit=yes
+            ExecStart=/usr/local/bin/px-pool-label.sh
+            ExecStartPost=/bin/touch /var/lib/px-pool-label.done
+
+            [Install]
+            WantedBy=multi-user.target

@@ -1,0 +1,38 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ./acm/
+  - ./acs/
+  - ./ansible-automation-platform/
+  - ./cert-manager/
+  - ./cluster-logging/
+  - ./cluster-observability/
+  - ./compliance-operator/
+  - ./data-foundation/
+  - ./descheduler/
+  - ./developer-hub/
+  - ./ebpf-manager/
+  - ./external-secrets/
+  - ./file-integrity/
+  - ./gatekeeper/
+  - ./gitops/
+  - ./ingress-node-firewall/
+  - ./kiali/
+  - ./loki/
+
+  - ./metallb/
+  - ./migration-toolkit/
+  - ./network-observability/
+  - ./nmstate/
+  - ./opentelemetry/
+
+  - ./secondary-scheduler/
+  - ./servicemesh/
+  - ./talm/
+  - ./tekton/
+  - ./tempo/
+  - ./virtualization/
+  - ./webterminal/
+  - ./workload-availability/

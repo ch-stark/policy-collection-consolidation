@@ -1,0 +1,63 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cyberark
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://cyberark.github.io/helm-charts
+    chart: conjur-oss
+    targetRevision: "2.1.1"
+    helm:
+      releaseName: conjur-oss
+      valuesObject:
+        authenticators: "authn-k8s/prod"
+        dataKey: "xtmvecebDLqRdB0RzZI3HCaMPjrUzdUJtqYXDCgOwSg="
+        image:
+          repository: registry.connect.redhat.com/cyberark/conjur
+          tag: latest
+        nginx:
+          image:
+            repository: registry.connect.redhat.com/cyberark/conjur-nginx
+            tag: ubi9-2.0.15-781
+        postgres:
+          image:
+            repository: registry.redhat.io/rhel8/postgresql-15
+            tag: latest
+        openshift:
+          enabled: true
+        persistentVolume:
+          create: true
+          size: 8Gi
+          # Set storageClass to use a non-default storage class for your platform
+          # storageClass:
+        rbac:
+          create: true
+        database:
+          url: ""
+        serviceAccount:
+          create: true
+          name: cyberark
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: conjur-oss
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - kind: ServiceAccount
+      jsonPointers:
+        - /imagePullSecrets
+    - group: '*'
+      kind: ClusterRole
+      jsonPointers:
+        - /rules
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

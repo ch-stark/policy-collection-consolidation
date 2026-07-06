@@ -1,0 +1,96 @@
+---
+object-templates-raw: |
+  ## Get the cluster specific ConfigMap to read network data out of
+  {{- $cluster_config := (lookup "v1" "ConfigMap" "default" "{{hub .ManagedClusterName hub}}").data }}
+
+  ## loop on the nodes in the cluster
+  {{- range $node := (getNodesWithExactRoles "worker").items }}
+     ## IF node not in ConfigMap move to next
+    {{- if not (hasKey $cluster_config $node.metadata.name) }}
+      {{- continue }}
+    {{- end }}
+
+    {{- $nd_name := $node.metadata.name }}
+    {{- $nd_config := (index $cluster_config $nd_name) | fromYaml }}
+
+    {{- range $nd_network := $nd_config.nodeNetworks }}
+    {{- $mtu := default 1500 $nd_network.mtu }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: nmstate.io/v1
+      kind: NodeNetworkConfigurationPolicy
+      metadata:
+        name: {{ printf "%s-%s" $nd_network.name $nd_name }}
+        labels:
+          nncp.generated-interface/type: bond
+      spec:
+        nodeSelector:
+          kubernetes.io/hostname: {{ $nd_name }}
+        desiredState:
+          interfaces:
+            ## Define physical interfaces identified by MAC address
+            {{- range $if := $nd_network.ethernets }}
+            - name: {{ $if.name }}
+              type: ethernet
+              state: up
+              mtu: {{ $mtu }}
+              identifier: mac-address
+              mac-address: "{{ $if.macAddress }}"
+            {{- end }}
+
+
+            ## Configure the Bond interface
+            {{- $bd := (index $nd_network.bonds 0) }}
+            - name: {{ $bd.name }}
+              type: bond
+              state: {{ default "up" $bd.state }}
+              mtu: {{ $mtu }}
+              link-aggregation:
+                options:
+                  fail_over_mac: active
+                mode: {{ $bd.mode }}
+                port:
+                {{- range $if := $nd_network.ethernets }}
+                  - {{ $if.name }}
+                {{- end }}
+
+            ## Configure the VLAN on top of the bond and assign the static IPv4
+            ## Only rendered when vlans are defined in the node config
+            {{- if $nd_network.vlans }}
+            {{- $vn := (index $nd_network.vlans 0) }}
+            - name: {{ printf "%s.%v" $bd.name $vn.id }}
+              type: vlan
+              state: {{ default "up" $vn.state }}
+              mtu: {{ $mtu }}
+              vlan:
+                base-iface: {{ $bd.name }}
+                id: {{ $vn.id }}
+            {{- if $vn.address }}
+              ipv4:
+                enabled: true
+                dhcp: false
+                address: {{ $vn.address | toRawJson | toLiteral }}
+            {{- end }}
+            {{- end }}
+
+            ## Configure bridges when defined in the node config
+            ## ovs-bridge type additionally sets allow-extra-patch-ports: true
+            {{- if $nd_network.bridges }}
+            {{- $br := (index $nd_network.bridges 0) }}
+            - name: {{ $br.name }}
+              type: {{ $br.type }}
+              state: {{ default "up" $br.state }}
+              bridge:
+              {{- if eq $br.type "ovs-bridge" }}
+                allow-extra-patch-ports: true
+              {{- end }}
+                options:
+                  stp: false
+                port:
+              {{- $port_name := default $bd.name $br.port }}
+                  - name: {{ $port_name }}
+            {{- end }}
+
+    {{- end }}
+  {{- end }}

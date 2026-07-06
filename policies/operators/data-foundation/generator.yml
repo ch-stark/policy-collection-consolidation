@@ -1,0 +1,71 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-odf
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - odf-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: odf-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "odf-binding"
+
+policies:
+  - name: odf-operator
+    description: "Installs ODF Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: odf-namespace
+
+      - path: operatorpolicy.yml
+        name: odf-operator-install
+
+  - name: odf-configure
+    description: "Configures ODF, only multi-object-gateway is deployed"
+    remediationAction: enforce
+    dependencies:
+      - name: "odf-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: console.yml
+        name: odf-console
+
+      - path: storagesystem.yml
+        name: storagesystem
+
+      - path: storagecluster.yml
+        name: storagecluster
+
+  - name: odf-operator-status
+    description: "Monitors health of ODF deployment"
+    remediationAction: inform
+    dependencies:
+      - name: "odf-configure"
+        compliance: "Compliant"
+    manifests:
+      - path: health/odf-status.yml
+        name: odf-status
+        evaluationInterval:
+          compliant: 30s
+          noncompliant: 30s
+
+policySets:
+  - name: odf-operator
+    placement:
+      placementName: "ft-storage--odf"

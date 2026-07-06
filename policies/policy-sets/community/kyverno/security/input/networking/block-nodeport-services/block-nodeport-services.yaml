@@ -1,0 +1,25 @@
+# WARNING: ClusterPolicy was DEPRECATED in Kyverno v1.17
+# To update your policy, browse the official Kyverno policy collection
+# for current examples: https://kyverno.io/policies
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  annotations:
+    policies.kyverno.io/description: >-
+      The policy does not allow creating NodePort services.
+  name: block-nodeport-services
+spec:
+  background: true
+  validationFailureAction: audit
+  rules:
+    - name: Prevent users from creating NodePort services
+      match:
+        resources:
+          kinds:
+            - Service
+      validate:
+        pattern:
+          spec:
+            type: "!NodePort"
+        message: "Services with the NodePort type are not allowed!"

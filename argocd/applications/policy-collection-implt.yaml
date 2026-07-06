@@ -1,0 +1,25 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policy-collection-implt
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/part-of: policy-collection
+    policy-collection/environment: implt
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_ORG/policy-collection-consolidation.git
+    targetRevision: main
+    path: environments/implt
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: acm-policies-implt
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

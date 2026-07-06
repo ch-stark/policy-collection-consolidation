@@ -1,0 +1,77 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-workload-availability
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - workload-availability-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: workload-availability-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "workload-availability-binding"
+
+policies:
+  - name: workload-availability-operator
+    description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, Node Maintenance, and Machine Deletion Operators"
+    manifests:
+      - path: namespace.yml
+        name: openshift-workload-availability-namespace
+      - path: fence-agent-operatorpolicy.yml
+        name: fence-agents-remediation-operator-install
+      - path: self-node-operatorpolicy.yml
+        name: self-node-remediation-operator-install
+      - path: node-healthcheck-operatorpolicy.yml
+        name: node-healthcheck-operator-install
+      - path: node-remediation-console.yml
+        name: node-remediation-console
+        extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1beta1
+            kind: OperatorPolicy
+            name: node-healthcheck-operator-install
+            compliance: "Compliant"
+      - path: node-maintenance-operatorpolicy.yml
+        name: node-maintenance-operator-install
+
+      - path: machine-deletion-operatorpolicy.yml
+        name: machine-deletion-remediation-operator-install
+
+  - name: workload-availability-remediation
+    description: "Configures example node remediation using Self Node Remediation or Fence Agent Operator"
+    dependencies:
+      - name: workload-availability-operator
+        compliance: "Compliant"
+    manifests:
+    ## Uncomment this block to use far, and comment the snr block below
+      # - path: far-nhc-remediation/nodehealthcheck.yml
+      #   name: far-nodehealhcheck
+      # - path: far-nhc-remediation/far-template.yml
+      #   name: far-outofservicetaint-remediation
+      # - path: far-nhc-remediation/mdr-template.yml
+      #   name: mdr-remediation
+
+      - path: snr-nhc-remediation/nodehealthcheck.yml
+        name: snr-nodehealhcheck
+      - path: snr-nhc-remediation/snr-outofservicetaint-template.yml
+        name: snr-outofservicetaint-remediation
+      - path: snr-nhc-remediation/mdr-template.yml
+        name: mdr-remediation
+
+policySets:
+  - name: workload-availability-operator
+    placement:
+      placementName: "ft-workload-availability--enabled"

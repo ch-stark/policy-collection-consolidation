@@ -1,0 +1,31 @@
+---
+object-templates-raw: |
+  {{- $ndNames := list }}
+  {{- range $nd := (lookup "v1" "Node" "" "").items }}
+    {{- $ndNames = append $ndNames $nd.metadata.name }}
+  {{- end }}
+
+  {{- if eq (len $ndNames) 0 }}
+    {{- fail "Zero nodes found in cluster." }}
+  {{- end }}
+
+  {{- range $fins := (lookup "fileintegrity.openshift.io/v1alpha1" "FileIntegrityNodeStatus" "" "").items }}
+    {{- if and (has $fins.nodeName $ndNames)
+              (eq $fins.lastResult.condition "Failed") }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: fileintegrity.openshift.io/v1alpha1
+      kind: FileIntegrityNodeStatus
+      metadata:
+        name: {{ $fins.metadata.name }}
+        namespace: {{ $fins.metadata.namespace }}
+
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: {{ $fins.lastResult.resultConfigMapName }}
+        namespace: {{ $fins.lastResult.resultConfigMapNamespace }}
+    {{- end }}
+  {{- end }}

@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-ingress
+  labels:
+    istio-discovery: enabled
+    istio.io/rev: default-v1-24-latest
+    maistra.io/ignore-namespace: 'true'

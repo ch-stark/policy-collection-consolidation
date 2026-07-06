@@ -1,0 +1,42 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: policy-opp-prereqs
+placementBindingDefaults:
+  name: binding-policy-openshift-plus-prereqs
+policyDefaults:
+  categories:
+    - CM Configuration Management
+  controls:
+    - CM-2 Baseline Configuration
+  namespace: open-cluster-management-global-set
+  policySets:
+    - openshift-plus-prereqs
+  remediationAction: enforce
+  severity: medium
+  standards:
+    - NIST SP 800-53
+policies:
+  - name: policy-opp-prereq-ns
+    manifests:
+      - path: namespace.yaml
+  - name: policy-opp-prereq-binding
+    dependencies:
+      - name: policy-opp-prereq-ns
+    manifests:
+      - path: managedclustersetbinding.yaml
+  - name: policy-opp-settings
+    dependencies:
+      - name: policy-opp-prereq-ns
+    manifests:
+      - path: opp-settings.yaml
+  - name: policy-opp-prereq-machines
+    dependencies:
+      - name: policy-opp-settings
+    manifests:
+      - path: machine-sets.yaml
+policySets:
+  - description: Applies the OpenShift Plus prerequisites to the ACM hub cluster
+    name: openshift-plus-prereqs
+    placement:
+      placementPath: placement.yaml

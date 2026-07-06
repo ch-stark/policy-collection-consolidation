@@ -1,0 +1,78 @@
+---
+object-templates-raw: |
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: user-workload-monitoring-config
+        namespace: openshift-user-workload-monitoring
+      data:
+        config.yaml: |
+          prometheus:
+            retention: 7d
+            retentionSize: 100GB
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 100Gi
+                storageClassName: gp3-csi
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            externalLabels:
+              instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+              product: {{ fromClusterClaim "product.open-cluster-management.io" }}
+              managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
+
+  {{hub- $ManagedClusterAnnotations := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" $.ManagedClusterName).metadata.annotations hub}}
+  {{hub- if not (empty (index $ManagedClusterAnnotations "hub-cluster-id")) hub}}
+            additionalAlertmanagerConfigs:
+            - apiVersion: v2
+              bearerToken:
+                key: token
+                name: 'observability-alertmanager-accessor-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
+              scheme: https
+              staticConfigs:
+              - {{hub index $ManagedClusterAnnotations "hub-alertmanager-url" hub}}
+              tlsConfig:
+                ca:
+                  key: service-ca.crt
+                  name: 'hub-alertmanager-router-ca-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
+                insecureSkipVerify: false
+  {{hub- end hub}}
+
+          prometheusOperator:
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+          thanosRuler:
+            retention: 7d
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 100Gi
+                storageClassName: gp3-csi
+            nodeSelector:
+              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+            tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra

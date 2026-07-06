@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-policy-alerts
+policyDefaults:
+  namespace: acm-policies
+  remediationAction: enforce
+  policySets:
+    - acm-alerts-placements
+
+placementBindingDefaults:
+  name: "acm-alerts-placement-binding"
+
+policies:
+  - name: acm-policy-alerts
+    remediationAction: enforce
+    configurationPolicyAnnotations:
+      policy.open-cluster-management.io/disable-templates: "true"
+    manifests:
+      - path: namespace.yml
+        name: acm-alert-namespace
+
+      - path: policy-prometheusrule.yml
+        name: acm-alert-prometheusrule
+
+policySets:
+  - name: acm-alerts-placements
+    placement:
+      placementName: "ft-acm-hub--active"

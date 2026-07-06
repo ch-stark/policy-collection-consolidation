@@ -1,0 +1,79 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: policy-odf-cluster
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{- /* create the StorageClass if on VMware */ -}}
+    {{- if (eq (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type "VSphere") }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: storage.k8s.io/v1
+        kind: StorageClass
+        metadata:
+          annotations:
+            storageclass.kubernetes.io/is-default-class: "false"
+          name: thin-csi-odf
+        parameters:
+          StoragePolicyName: "vSAN Default Storage Policy"
+        provisioner: csi.vsphere.vmware.com
+        allowVolumeExpansion: true
+        reclaimPolicy: Delete
+        volumeBindingMode: WaitForFirstConsumer
+    {{- end }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: ocs.openshift.io/v1
+        kind: StorageCluster
+        metadata:
+          name: ocs-storagecluster
+          namespace: openshift-storage
+        spec:
+          resources:
+            mds: {}
+            mgr: {}
+            mon: {}
+            noobaa-core:
+              limits:
+                cpu: 2
+                memory: 8Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+            noobaa-db:
+              limits:
+                cpu: 2
+                memory: 8Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+            noobaa-endpoint:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 2Gi
+            rgw: {}
+          storageDeviceSets:
+          - count: 1
+            dataPVCTemplate:
+              spec:
+                accessModes:
+                - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: "100Gi"
+    {{- if (eq (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type "VSphere") }}
+                storageClassName: "thin-csi-odf"
+    {{- else }}
+                storageClassName: "gp3-csi"
+    {{- end }}
+                volumeMode: Block
+            name: ocs-deviceset
+            placement: {}
+            portable: true
+            replica: 3
+            resources: {}
