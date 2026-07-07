@@ -53,14 +53,6 @@ flowchart TD
 | bry-acm-policy-samples `environments/` | `environments/` | Environment model |
 | bry-acm-policy-samples `template-examples/` | `template-examples/` | Template patterns |
 
-## What was removed
-
-- `legacy/` raw Policy YAML — consolidated into PolicyGenerator projects
-- `deploy/subscription.yaml`, `deploy/deploy.sh` — appsub GitOps
-- `policygenerator/` duplicate content — moved under `policies/`
-- ARO-specific and third-party samples not carried forward (e.g. `zts-xcrypt`)
-
-## Namespace strategy
 
 - Generator default: `acm-policies` (placeholder)
 - Environment overlay sets actual namespace: `acm-policies-dev`, `acm-policies-prod`, etc.
@@ -69,3 +61,37 @@ flowchart TD
 ## PolicySet strategy
 
 Large bundles (openshift-plus, gatekeeper sets) live in `policies/policy-sets/` and are **opt-in**. They are validated by `./build/validate-policies.sh` but not included in the default `policies/kustomization.yaml` environment build.
+
+## Ecosystem fit
+
+This repository is **governance content** — policy manifests, PolicyGenerator projects, and environment overlays. It sits in a larger multicluster GitOps stack alongside fleet frameworks and reference architectures.
+
+```mermaid
+flowchart TB
+  Upstream["open-cluster-management-io/policy-collection"]
+  Consolidation["policy-collection-consolidation\n(this repo)"]
+  AutoShift["AutoShiftv2"]
+  VP["Validated Patterns\nMulticloud GitOps"]
+  Fleet["Customer / fleet GitOps repos"]
+
+  Upstream -->|"content + PolicySets"| Consolidation
+  Consolidation -->|"MVP reference / dogfood"| Upstream
+  Upstream --> AutoShift
+  Consolidation --> Fleet
+  VP -->|"hub + spoke wiring"| Fleet
+```
+
+| Artifact | Role |
+|----------|------|
+| [policy-collection](https://github.com/open-cluster-management-io/policy-collection) | Upstream canonical policy examples and PolicySets |
+| **policy-collection-consolidation** (this repo) | Reference implementation: PolicyGenerator-only, ArgoCD deploy, environment overlays, machine-readable catalog |
+| [AutoShiftv2](https://github.com/auto-shift/autoshiftv2) | Production fleet framework that **uses ACM Policies heavily** for day-2 OpenShift Platform Plus; consumes curated policy tiers (`stable/`, `community/`, `certified/`) aligned with policy-collection |
+| [Multicloud GitOps](https://validatedpatterns.io/patterns/multicloud-gitops/) | Validated Pattern for hub-and-spoke GitOps with RHACM governance on managed clusters — defines **how** fleets are wired, not which policies to ship |
+
+### AutoShift
+
+[AutoShiftv2](https://github.com/auto-shift/autoshiftv2) is an opinionated IaC framework for post-install OpenShift management using **ACM and OpenShift GitOps**. GitOps on the hub declaratively manages ACM; ACM distributes configuration and compliance to managed clusters. AutoShift is a primary **downstream consumer** of policy-collection-style content: feature toggles, dry-run rollout, and versioned ClusterSets mirror patterns in this repo’s `environments/` overlays.
+
+Proven changes here (PolicyGenerator layout, Placement API, ArgoCD-only delivery) are candidates for upstream policy-collection PRs that AutoShift and similar frameworks can vendor without translation layers.
+
+
